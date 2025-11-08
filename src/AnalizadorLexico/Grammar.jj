@@ -1,0 +1,90 @@
+options {
+    IGNORE_CASE = false;
+    STATIC = false;
+    BUILD_PARSER = false; 
+}
+
+PARSER_BEGIN(CarumaLangLexer)
+
+package AnalizadorLexico;
+
+public class CarumaLangLexer { }
+
+PARSER_END(CarumaLangLexer)
+
+// -------------------------------------------------------
+// ------------------ ESPACIOS Y COMENTARIOS --------------
+// -------------------------------------------------------
+
+SKIP : {
+    " " | "\t" | "\r" | "\n"
+}
+
+// -------------------------------------------------------
+// ------------------- PALABRAS RESERVADAS ----------------
+// -------------------------------------------------------
+
+TOKEN : { 
+    < CARUMA : "Caruma" >
+|   < HOLAHOLA : "holahola" >
+|   < BYEBYE : "byebye" >
+|   < CAECLIENTE : "CaeCliente" >
+|   < SINOCAE : "SiNoCae" >
+|   < PAPOI : "papoi" >
+|   < PARAPAPOI : "paraPapoi" >
+|   < STOPPLEASE : "stopPlease" >
+|   < DIOS : "DIOS" >
+|   < INTCHELADA : "intCHELADA" >
+|   < GRANITO : "granito" >
+|   < CADENA : "cadena" >
+|   < CARACTER : "caracter" >
+}
+
+// -------------------------------------------------------
+// ---------------------- OPERADORES ----------------------
+// -------------------------------------------------------
+
+TOKEN : {
+    < ESTOES : "=" >
+|   < MENORIGUALITOQUE : "<=" >
+|   < MAYORIGUALITOQUE : ">=" >
+|   < IGUALITO : "==" >
+|   < MAYORQUE : ">" >
+|   < MENORQUE : "<" >
+|   < PONER : "+" >
+|   < QUITAR : "-" >
+|   < SALEMAS : "*" >
+|   < SALEMENOS : "/" >
+}
+
+// -------------------------------------------------------
+// --------------------- DELIMITADORES --------------------
+// -------------------------------------------------------
+
+TOKEN : {
+    < ABRIENDO : "(" >
+|   < CERRANDO : ")" >
+|   < OPEN : "{" >
+|   < CLOSE : "}" >
+|   < AHIVA : ":" >
+}
+
+// -------------------------------------------------------
+// ---------------- IDENTIFICADORES Y LITERALES ------------
+// -------------------------------------------------------
+
+TOKEN : { 
+    < MIXCHELADA : (["a"-"z", "A"-"Z"]) (["a"-"z", "A"-"Z", "0"-"9"])* >
+|   < NUMERITO : (["0"-"9"])+ ( "." (["0"-"9"])+ )? >
+|   < TEXTOLITERAL : "\"" ( ~["\"","\n","\r"] )* "\"" >
+|   < LETRALITERAL : "'" ( ~["'","\n","\r"] ) "'" >
+}
+
+// -------------------------------------------------------
+// ---------------------- ERRORES LÉXICOS -----------------
+// -------------------------------------------------------
+
+// Cualquier carácter no reconocido genera error
+TOKEN : {
+    < INVALID : ~[] >
+}

@@ -1,0 +1,36 @@
+Caruma
+holahola
+
+intCHELADA numero EstoEs 42
+intCHELADA cliente EstoEs 100
+granito pi EstoEs 3.14
+
+cadena mensaje EstoEs "Hola Mundo"
+caracter letra EstoEs 'A'
+
+CaeCliente Abriendo numero MayorQue 50 Cerrando Open
+    DIOS Abriendo "El numero es mayor que 50" Cerrando
+Close SiNoCae Open
+    DIOS Abriendo "El numero es menor o igual a 50" Cerrando
+Close
+
+intCHELADA contador EstoEs 0
+paraPapoi Abriendo contador MenorQue 10 Cerrando Open
+    DIOS Abriendo "Contador: " Cerrando
+    contador EstoEs contador Poner 1
+Close
+
+mixCHELADA suma EstoEs numero Poner cliente
+mixCHELADA resta EstoEs numero Quitar 10
+mixCHELADA multiplicacion EstoEs numero SaleMas 2
+mixCHELADA division EstoEs numero SaleMenos 2
+
+CaeCliente Abriendo numero Igualito cliente Cerrando Open
+    DIOS Abriendo "Los numeros son iguales" Cerrando
+Close
+
+CaeCliente Abriendo pi MayorIgualitoque 3.0 Cerrando Open
+    DIOS Abriendo "Pi es mayor o igual a 3.0" Cerrando
+Close
+
+byebye

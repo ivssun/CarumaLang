@@ -1,0 +1,230 @@
+Caruma
+holahola
+
+intCHELADA num1 EstoEs 50
+intCHELADA num2 EstoEs 30
+intCHELADA resultado EstoEs 0
+
+DIOS Abriendo "========================================" Cerrando
+DIOS Abriendo "   CALCULADORA CARUMALANG" Cerrando
+DIOS Abriendo "========================================" Cerrando
+
+DIOS Abriendo "Numero 1: " Cerrando
+DIOS Abriendo num1 Cerrando
+
+DIOS Abriendo "Numero 2: " Cerrando
+DIOS Abriendo num2 Cerrando
+
+DIOS Abriendo "----------------------------------------" Cerrando
+DIOS Abriendo "OPERACIONES ARITMETICAS" Cerrando
+DIOS Abriendo "----------------------------------------" Cerrando
+
+resultado EstoEs num1 Poner num2
+DIOS Abriendo "Suma: " Cerrando
+DIOS Abriendo num1 Cerrando
+DIOS Abriendo " Poner " Cerrando
+DIOS Abriendo num2 Cerrando
+DIOS Abriendo " EstoEs " Cerrando
+DIOS Abriendo resultado Cerrando
+
+resultado EstoEs num1 Quitar num2
+DIOS Abriendo "Resta: " Cerrando
+DIOS Abriendo num1 Cerrando
+DIOS Abriendo " Quitar " Cerrando
+DIOS Abriendo num2 Cerrando
+DIOS Abriendo " EstoEs " Cerrando
+DIOS Abriendo resultado Cerrando
+
+resultado EstoEs num1 SaleMas num2
+DIOS Abriendo "Multiplicacion: " Cerrando
+DIOS Abriendo num1 Cerrando
+DIOS Abriendo " SaleMas " Cerrando
+DIOS Abriendo num2 Cerrando
+DIOS Abriendo " EstoEs " Cerrando
+DIOS Abriendo resultado Cerrando
+
+resultado EstoEs num1 SaleMenos num2
+DIOS Abriendo "Division: " Cerrando
+DIOS Abriendo num1 Cerrando
+DIOS Abriendo " SaleMenos " Cerrando
+DIOS Abriendo num2 Cerrando
+DIOS Abriendo " EstoEs " Cerrando
+DIOS Abriendo resultado Cerrando
+
+DIOS Abriendo "----------------------------------------" Cerrando
+DIOS Abriendo "OPERACIONES CON DECIMALES" Cerrando
+DIOS Abriendo "----------------------------------------" Cerrando
+
+granito precio EstoEs 99.99
+granito descuento EstoEs 15.50
+granito total EstoEs 0.0
+
+total EstoEs precio Quitar descuento
+DIOS Abriendo "Precio original: " Cerrando
+DIOS Abriendo precio Cerrando
+
+DIOS Abriendo "Descuento: " Cerrando
+DIOS Abriendo descuento Cerrando
+
+DIOS Abriendo "Total a pagar: " Cerrando
+DIOS Abriendo total Cerrando
+
+DIOS Abriendo "----------------------------------------" Cerrando
+DIOS Abriendo "COMPARACIONES" Cerrando
+DIOS Abriendo "----------------------------------------" Cerrando
+
+CaeCliente Abriendo num1 MayorQue num2 Cerrando Open
+    DIOS Abriendo num1 Cerrando
+    DIOS Abriendo " es MAYOR que " Cerrando
+    DIOS Abriendo num2 Cerrando
+Close
+
+CaeCliente Abriendo num1 MenorQue num2 Cerrando Open
+    DIOS Abriendo num1 Cerrando
+    DIOS Abriendo " es MENOR que " Cerrando
+    DIOS Abriendo num2 Cerrando
+Close SiNoCae Open
+    DIOS Abriendo num1 Cerrando
+    DIOS Abriendo " NO es menor que " Cerrando
+    DIOS Abriendo num2 Cerrando
+Close
+
+CaeCliente Abriendo num1 Igualito num2 Cerrando Open
+    DIOS Abriendo "Los numeros son IGUALES" Cerrando
+Close SiNoCae Open
+    DIOS Abriendo "Los numeros son DIFERENTES" Cerrando
+Close
+
+intCHELADA edad EstoEs 18
+CaeCliente Abriendo edad MayorIgualitoque 18 Cerrando Open
+    DIOS Abriendo "Es mayor de edad" Cerrando
+Close
+
+CaeCliente Abriendo edad MenorIgualitoque 17 Cerrando Open
+    DIOS Abriendo "Es menor de edad" Cerrando
+Close SiNoCae Open
+    DIOS Abriendo "Tiene 18 o mas" Cerrando
+Close
+
+DIOS Abriendo "----------------------------------------" Cerrando
+DIOS Abriendo "BUCLES Y CONTADORES" Cerrando
+DIOS Abriendo "----------------------------------------" Cerrando
+
+DIOS Abriendo "Contando del 1 al 5:" Cerrando
+intCHELADA contador EstoEs 1
+paraPapoi Abriendo contador MenorIgualitoque 5 Cerrando Open
+    DIOS Abriendo "Contador: " Cerrando
+    DIOS Abriendo contador Cerrando
+    contador EstoEs contador Poner 1
+Close
+
+DIOS Abriendo "Contando regresivo del 10 al 6:" Cerrando
+intCHELADA regresivo EstoEs 10
+paraPapoi Abriendo regresivo MayorIgualitoque 6 Cerrando Open
+    DIOS Abriendo "Regresivo: " Cerrando
+    DIOS Abriendo regresivo Cerrando
+    regresivo EstoEs regresivo Quitar 1
+Close
+
+DIOS Abriendo "----------------------------------------" Cerrando
+DIOS Abriendo "TABLA DE MULTIPLICAR DEL 5" Cerrando
+DIOS Abriendo "----------------------------------------" Cerrando
+
+intCHELADA multiplicador EstoEs 1
+intCHELADA base EstoEs 5
+intCHELADA producto EstoEs 0
+
+paraPapoi Abriendo multiplicador MenorIgualitoque 10 Cerrando Open
+    producto EstoEs base SaleMas multiplicador
+    DIOS Abriendo base Cerrando
+    DIOS Abriendo " x " Cerrando
+    DIOS Abriendo multiplicador Cerrando
+    DIOS Abriendo " EstoEs " Cerrando
+    DIOS Abriendo producto Cerrando
+    multiplicador EstoEs multiplicador Poner 1
+Close
+
+DIOS Abriendo "----------------------------------------" Cerrando
+DIOS Abriendo "TIPOS DE DATOS" Cerrando
+DIOS Abriendo "----------------------------------------" Cerrando
+
+cadena nombre EstoEs "CarumaLang"
+cadena version EstoEs "1.0"
+caracter inicial EstoEs 'C'
+
+DIOS Abriendo "Lenguaje: " Cerrando
+DIOS Abriendo nombre Cerrando
+
+DIOS Abriendo "Version: " Cerrando
+DIOS Abriendo version Cerrando
+
+DIOS Abriendo "Inicial: " Cerrando
+DIOS Abriendo inicial Cerrando
+
+DIOS Abriendo "----------------------------------------" Cerrando
+DIOS Abriendo "OPERACIONES COMPLEJAS" Cerrando
+DIOS Abriendo "----------------------------------------" Cerrando
+
+intCHELADA a EstoEs 10
+intCHELADA b EstoEs 5
+intCHELADA c EstoEs 2
+intCHELADA operacion EstoEs 0
+
+operacion EstoEs a Poner b SaleMas c
+DIOS Abriendo "a Poner b SaleMas c EstoEs " Cerrando
+DIOS Abriendo operacion Cerrando
+
+operacion EstoEs a SaleMas b Quitar c
+DIOS Abriendo "a SaleMas b Quitar c EstoEs " Cerrando
+DIOS Abriendo operacion Cerrando
+
+operacion EstoEs a SaleMenos b Poner c
+DIOS Abriendo "a SaleMenos b Poner c EstoEs " Cerrando
+DIOS Abriendo operacion Cerrando
+
+DIOS Abriendo "----------------------------------------" Cerrando
+DIOS Abriendo "VALIDACIONES COMPLEJAS" Cerrando
+DIOS Abriendo "----------------------------------------" Cerrando
+
+intCHELADA puntos EstoEs 85
+cadena calificacion EstoEs "Aprobado"
+
+CaeCliente Abriendo puntos MayorIgualitoque 90 Cerrando Open
+    calificacion EstoEs "Excelente"
+    DIOS Abriendo "Calificacion: Excelente" Cerrando
+Close SiNoCae Open
+    CaeCliente Abriendo puntos MayorIgualitoque 70 Cerrando Open
+        calificacion EstoEs "Aprobado"
+        DIOS Abriendo "Calificacion: Aprobado" Cerrando
+    Close SiNoCae Open
+        calificacion EstoEs "Reprobado"
+        DIOS Abriendo "Calificacion: Reprobado" Cerrando
+    Close
+Close
+
+DIOS Abriendo "----------------------------------------" Cerrando
+DIOS Abriendo "IDENTIFICADORES LARGOS" Cerrando
+DIOS Abriendo "----------------------------------------" Cerrando
+
+intCHELADA numeroDeEstudiantes EstoEs 150
+granito promedioGeneral EstoEs 87.5
+cadena nombreDeLaEscuela EstoEs "Universidad CarumaLang"
+caracter gradoAcademico EstoEs 'A'
+
+DIOS Abriendo "Escuela: " Cerrando
+DIOS Abriendo nombreDeLaEscuela Cerrando
+
+DIOS Abriendo "Estudiantes: " Cerrando
+DIOS Abriendo numeroDeEstudiantes Cerrando
+
+DIOS Abriendo "Promedio: " Cerrando
+DIOS Abriendo promedioGeneral Cerrando
+
+DIOS Abriendo "Grado: " Cerrando
+DIOS Abriendo gradoAcademico Cerrando
+
+DIOS Abriendo "========================================" Cerrando
+DIOS Abriendo "   FIN DE LA CALCULADORA" Cerrando
+DIOS Abriendo "========================================" Cerrando
+
+byebye
