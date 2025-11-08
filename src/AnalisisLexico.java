@@ -15,11 +15,13 @@ public class AnalisisLexico {
         String mensaje;
         int linea;
         int columna;
+        String caracterInvalido;
         
-        ErrorLexico(String mensaje, int linea, int columna) {
+        ErrorLexico(String mensaje, int linea, int columna, String caracterInvalido) {
             this.mensaje = mensaje;
             this.linea = linea;
             this.columna = columna;
+            this.caracterInvalido = caracterInvalido;
         }
     }
     
@@ -40,9 +42,9 @@ public class AnalisisLexico {
             try {
                 analizarArchivo(fileName);
             } catch (FileNotFoundException e) {
-                System.err.println("✗ Error: No se pudo encontrar el archivo: " + fileName);
+                System.err.println("Error: No se pudo encontrar el archivo: " + fileName);
             } catch (IOException e) {
-                System.err.println("✗ Error al leer el archivo: " + e.getMessage());
+                System.err.println("Error al leer el archivo: " + e.getMessage());
             }
         } else {
             System.out.println("No se seleccionó ningún archivo.");
@@ -63,7 +65,7 @@ public class AnalisisLexico {
         List<ErrorLexico> errores = new ArrayList<>();
         
         System.out.println("TOKENS RECONOCIDOS:");
-        System.out.println("----------------------------------------");
+        System.out.println("--------------------------------------------------------------------------------------------------");
         
         boolean continuar = true;
         while (continuar) {
@@ -72,10 +74,22 @@ public class AnalisisLexico {
                 
                 if (token.kind == CarumaLangLexerConstants.EOF) {
                     continuar = false;
+                } else if (token.kind == CarumaLangLexerConstants.INVALID) {
+                    // Token INVALID reconocido - tratarlo como error pero continuar
+                    String caracterInvalido = token.image;
+                    String mensaje = "Carácter no reconocido: '" + caracterInvalido + 
+                                   "' (ASCII: " + (int)caracterInvalido.charAt(0) + ")";
+                    
+                    errores.add(new ErrorLexico(mensaje, token.beginLine, token.beginColumn, caracterInvalido));
+                    
+                    System.out.printf("ERROR | %-35s | Carácter inválido              | Línea: %d, Col: %d%n",
+                        caracterInvalido,
+                        token.beginLine,
+                        token.beginColumn);
                 } else {
                     tokensValidos.add(token);
                     String tokenName = CarumaLangLexerConstants.tokenImage[token.kind];
-                    System.out.printf("%-3d | %-20s | %-30s | Línea: %d, Col: %d%n", 
+                    System.out.printf("%-5d | %-35s | %-30s | Línea: %d, Col: %d%n", 
                         tokensValidos.size(),
                         token.image,
                         tokenName,
@@ -83,12 +97,24 @@ public class AnalisisLexico {
                         token.beginColumn);
                 }
             } catch (TokenMgrError e) {
-                // Capturar información del error
+                // Capturar información del error (backup por si el token INVALID falla)
                 String mensaje = e.getMessage();
                 int linea = stream.getEndLine();
                 int columna = stream.getEndColumn();
                 
-                errores.add(new ErrorLexico(mensaje, linea, columna));
+                // Extraer el carácter problemático del mensaje de error
+                String caracterInvalido = "?";
+                if (mensaje.contains("Encountered: \"")) {
+                    int start = mensaje.indexOf("Encountered: \"") + 14;
+                    int end = mensaje.indexOf("\"", start);
+                    if (end > start) {
+                        caracterInvalido = mensaje.substring(start, end);
+                    }
+                }
+                
+                errores.add(new ErrorLexico(mensaje, linea, columna, caracterInvalido));
+                
+                System.out.printf("ERROR | %-20s | Error léxico            | Línea: %d, Col: %d%n", caracterInvalido, linea, columna);
                 
                 // Intentar recuperarse: avanzar un carácter
                 try {
@@ -99,36 +125,55 @@ public class AnalisisLexico {
             }
         }
         
-        System.out.println("----------------------------------------");
+        System.out.println("---------------------------------------------------------------------------------------------------");
         
-        // Mostrar errores si los hay
+        // Mostrar tabla de errores si los hay
         if (!errores.isEmpty()) {
-            System.out.println("\nERRORES LÉXICOS ENCONTRADOS:");
-            System.out.println("----------------------------------------");
+            System.out.println("\n--------------------------------------");
+            System.out.println("     ERRORES LÉXICOS ENCONTRADOS        ");
+            System.out.println("--------------------------------------");
+            System.out.println();
+            System.out.println("-----------------------------------------");
+            System.out.println("│ No. │ Carácter    │ Línea  │ Columna │");
+            System.out.println("-----------------------------------------");
+            
             for (int i = 0; i < errores.size(); i++) {
                 ErrorLexico error = errores.get(i);
-                System.out.printf("Error %d: %s (Línea: %d, Col: %d)%n", 
-                    i + 1, 
-                    error.mensaje,
+                String caracterMostrar = error.caracterInvalido;
+                if (caracterMostrar.equals("\n")) caracterMostrar = "\\n";
+                if (caracterMostrar.equals("\t")) caracterMostrar = "\\t";
+                if (caracterMostrar.equals("\r")) caracterMostrar = "\\r";
+                
+                System.out.printf("│ %-4d │ %-11s │ %-6d │ %-7d │%n", 
+                    i + 1,
+                    caracterMostrar,
                     error.linea,
                     error.columna);
             }
-            System.out.println("----------------------------------------");
+            System.out.println("------------------------------------------");
         }
         
         // Resumen final
-        System.out.println("\nRESUMEN DEL ANÁLISIS:");
-        System.out.println("----------------------------------------");
-        System.out.println("Tokens válidos: " + tokensValidos.size());
-        System.out.println("Errores encontrados: " + errores.size());
+        System.out.println("\n--------------------------------------");
+        System.out.println("        RESUMEN DEL ANÁLISIS            ");
+        System.out.println("--------------------------------------");
+        System.out.println();
+        System.out.println("Tokens válidos reconocidos: " + tokensValidos.size());
+        System.out.println("Errores léxicos encontrados: " + errores.size());
+        System.out.println();
         
         if (errores.isEmpty()) {
-            System.out.println("\nAnálisis léxico completado SIN ERRORES");
+            System.out.println("Análisis léxico completado SIN ERRORES");
+            System.out.println("El archivo cumple con la sintaxis léxica de CarumaLang");
         } else {
-            System.out.println("\nAnálisis completado CON ERRORES");
+            System.out.println("Análisis completado CON ERRORES");
+            System.out.println("Se encontraron " + errores.size() + " caracteres no reconocidos");
+            System.out.println("Revise la tabla de errores para más detalles");
         }
-        System.out.println("========================================");
+        
+        System.out.println("\n========================================");
         
         reader.close();
     }
+    
 }
