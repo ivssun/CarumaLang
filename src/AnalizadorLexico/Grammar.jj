@@ -25,19 +25,27 @@ SKIP : {
 // -------------------------------------------------------
 
 TOKEN : { 
-    < CARUMA : "Caruma" >
-|   < HOLAHOLA : "holahola" >
-|   < BYEBYE : "byebye" >
-|   < CAECLIENTE : "CaeCliente" >
-|   < SINOCAE : "SiNoCae" >
-|   < PAPOI : "papoi" >
-|   < PARAPAPOI : "paraPapoi" >
-|   < STOPPLEASE : "stopPlease" >
-|   < DIOS : "DIOS" >
-|   < INTCHELADA : "intCHELADA" >
-|   < GRANITO : "granito" >
-|   < CADENA : "cadena" >
-|   < CARACTER : "caracter" >
+    // Estructura del Programa
+    < CARUMA : "Caruma" >          // MAIN - Inicio del programa principal
+|   < HOLAHOLA : "holahola" >      // PRINT - Instrucción de impresión
+|   < BYEBYE : "byebye" >          // RETURN - Retorno/Fin de función
+
+    // Control de Flujo
+|   < CAECLIENTE : "CaeCliente" >  // IF - Condicional
+|   < SINOCAE : "SiNoCae" >        // ELSE - Condicional alternativo
+|   < PAPOI : "papoi" >            // WHILE - Bucle mientras
+|   < PARAPAPOI : "paraPapoi" >    // FOR - Bucle para
+|   < STOPPLEASE : "stopPlease" >  // BREAK - Romper bucle
+
+    // Valores Booleanos
+|   < DIOS : "DIOS" >              // TRUE - Valor booleano verdadero
+|   < DIOSNO : "DIOSNO" >          // FALSE - Valor booleano falso
+
+    // Tipos de Datos
+|   < INTCHELADA : "intCHELADA" >  // TYPE_INT - Tipo entero
+|   < GRANITO : "granito" >        // TYPE_FLOAT - Tipo decimal
+|   < CADENA : "cadena" >          // TYPE_STRING - Tipo cadena
+|   < CARACTER : "caracter" >      // CHARACTER - Tipo carácter
 }
 
 // -------------------------------------------------------
@@ -45,16 +53,21 @@ TOKEN : {
 // -------------------------------------------------------
 
 TOKEN : {
-    < ESTOES : "=" >
-|   < MENORIGUALITOQUE : "<=" >
-|   < MAYORIGUALITOQUE : ">=" >
-|   < IGUALITO : "==" >
-|   < MAYORQUE : ">" >
-|   < MENORQUE : "<" >
-|   < PONER : "+" >
-|   < QUITAR : "-" >
-|   < SALEMAS : "*" >
-|   < SALEMENOS : "/" >
+    // Asignación
+    < ESTOES : "=" >                      // ASSIGN - "="
+
+    // Operadores Relacionales
+|   < MENORIGUALITOQUE : "<=" >           // LE - "<="
+|   < MAYORIGUALITOQUE : ">=" >           // GE - ">="
+|   < IGUALITO : "==" >                   // EQ - "=="
+|   < MAYORQUE : ">" >                    // GT - ">"
+|   < MENORQUE : "<" >                    // LT - "<"
+
+    // Operadores Aritméticos
+|   < PONER : "+" >                       // PLUS - "+"
+|   < QUITAR : "-" >                      // MINUS - "-"
+|   < SALEMAS : "*" >                     // MULT - "*"
+|   < SALEMENOS : "/" >                   // DIV - "/"
 }
 
 // -------------------------------------------------------
@@ -62,11 +75,11 @@ TOKEN : {
 // -------------------------------------------------------
 
 TOKEN : {
-    < ABRIENDO : "(" >
-|   < CERRANDO : ")" >
-|   < OPEN : "{" >
-|   < CLOSE : "}" >
-|   < AHIVA : ":" >
+    < ABRIENDO : "(" >     // PAR_OPEN - "("
+|   < CERRANDO : ")" >     // PAR_CLOSE - ")"
+|   < OPEN : "{" >         // BRACKET_OPEN - "{"
+|   < CLOSE : "}" >        // BRACKET_CLOSE - "}"
+|   < AHIVA : ":" >        // COLON - ":"
 }
 
 // -------------------------------------------------------
@@ -74,9 +87,20 @@ TOKEN : {
 // -------------------------------------------------------
 
 TOKEN : { 
+    // ID - Identificadores (variables/funciones)
+    // Patrón: letra (letra | dígito)*
     < MIXCHELADA : (["a"-"z", "A"-"Z"]) (["a"-"z", "A"-"Z", "0"-"9"])* >
+
+    // NUM - Literales numéricos (enteros y decimales)
+    // Patrón: dígito+ ('.' dígito+)?
 |   < NUMERITO : (["0"-"9"])+ ( "." (["0"-"9"])+ )? >
+
+    // STRING_LITERAL - Cadenas de texto entre comillas dobles
+    // Patrón: "\"" (~["\"","\n","\r"])* "\""
 |   < TEXTOLITERAL : "\"" ( ~["\"","\n","\r"] )* "\"" >
+
+    // CHAR_LITERAL - Caracteres individuales entre comillas simples
+    // Patrón: "'" (~["'","\n","\r"]) "'"
 |   < LETRALITERAL : "'" ( ~["'","\n","\r"] ) "'" >
 }
 

@@ -1,36 +1,54 @@
 Caruma
-holahola
+holahola("Hola Mundo desde CarumaLang")
 
-intCHELADA numero EstoEs 42
-intCHELADA cliente EstoEs 100
-granito pi EstoEs 3.14
+intCHELADA numero = 42
+intCHELADA cliente = 100
+granito pi = 3.14
 
-cadena mensaje EstoEs "Hola Mundo"
-caracter letra EstoEs 'A'
+cadena mensaje = "Hola"
+caracter letra = 'A'
 
-CaeCliente Abriendo numero MayorQue 50 Cerrando Open
-    DIOS Abriendo "El numero es mayor que 50" Cerrando
-Close SiNoCae Open
-    DIOS Abriendo "El numero es menor o igual a 50" Cerrando
-Close
+holahola("Numero inicial: ")
+holahola(numero)
 
-intCHELADA contador EstoEs 0
-paraPapoi Abriendo contador MenorQue 10 Cerrando Open
-    DIOS Abriendo "Contador: " Cerrando
-    contador EstoEs contador Poner 1
-Close
+CaeCliente(numero > 50) {
+    holahola("El numero es mayor que 50")
+} SiNoCae {
+    holahola("El numero es menor o igual a 50")
+}
 
-mixCHELADA suma EstoEs numero Poner cliente
-mixCHELADA resta EstoEs numero Quitar 10
-mixCHELADA multiplicacion EstoEs numero SaleMas 2
-mixCHELADA division EstoEs numero SaleMenos 2
+intCHELADA contador = 0
+paraPapoi(contador < 10) {
+    holahola("Contador: ")
+    holahola(contador)
+    contador = contador + 1
+}
 
-CaeCliente Abriendo numero Igualito cliente Cerrando Open
-    DIOS Abriendo "Los numeros son iguales" Cerrando
-Close
+mixCHELADA suma = numero + cliente
+mixCHELADA resta = numero - 10
+mixCHELADA multiplicacion = numero * 2
+mixCHELADA division = numero / 2
 
-CaeCliente Abriendo pi MayorIgualitoque 3.0 Cerrando Open
-    DIOS Abriendo "Pi es mayor o igual a 3.0" Cerrando
-Close
+holahola("Suma resultado: ")
+holahola(suma)
+
+CaeCliente(numero == cliente) {
+    holahola("Los numeros son iguales")
+} SiNoCae {
+    holahola("Los numeros son diferentes")
+}
+
+CaeCliente(pi >= 3.0) {
+    holahola("Pi es mayor o igual a 3.0")
+}
+
+intCHELADA esMayor = DIOS
+intCHELADA esMenor = DIOSNO
+
+holahola("Valor booleano TRUE: ")
+holahola(esMayor)
+
+holahola("Valor booleano FALSE: ")
+holahola(esMenor)
 
 byebye

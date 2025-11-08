@@ -29,53 +29,55 @@ public interface CarumaLangLexerConstants {
   /** RegularExpression Id. */
   int DIOS = 13;
   /** RegularExpression Id. */
-  int INTCHELADA = 14;
+  int DIOSNO = 14;
   /** RegularExpression Id. */
-  int GRANITO = 15;
+  int INTCHELADA = 15;
   /** RegularExpression Id. */
-  int CADENA = 16;
+  int GRANITO = 16;
   /** RegularExpression Id. */
-  int CARACTER = 17;
+  int CADENA = 17;
   /** RegularExpression Id. */
-  int ESTOES = 18;
+  int CARACTER = 18;
   /** RegularExpression Id. */
-  int MENORIGUALITOQUE = 19;
+  int ESTOES = 19;
   /** RegularExpression Id. */
-  int MAYORIGUALITOQUE = 20;
+  int MENORIGUALITOQUE = 20;
   /** RegularExpression Id. */
-  int IGUALITO = 21;
+  int MAYORIGUALITOQUE = 21;
   /** RegularExpression Id. */
-  int MAYORQUE = 22;
+  int IGUALITO = 22;
   /** RegularExpression Id. */
-  int MENORQUE = 23;
+  int MAYORQUE = 23;
   /** RegularExpression Id. */
-  int PONER = 24;
+  int MENORQUE = 24;
   /** RegularExpression Id. */
-  int QUITAR = 25;
+  int PONER = 25;
   /** RegularExpression Id. */
-  int SALEMAS = 26;
+  int QUITAR = 26;
   /** RegularExpression Id. */
-  int SALEMENOS = 27;
+  int SALEMAS = 27;
   /** RegularExpression Id. */
-  int ABRIENDO = 28;
+  int SALEMENOS = 28;
   /** RegularExpression Id. */
-  int CERRANDO = 29;
+  int ABRIENDO = 29;
   /** RegularExpression Id. */
-  int OPEN = 30;
+  int CERRANDO = 30;
   /** RegularExpression Id. */
-  int CLOSE = 31;
+  int OPEN = 31;
   /** RegularExpression Id. */
-  int AHIVA = 32;
+  int CLOSE = 32;
   /** RegularExpression Id. */
-  int MIXCHELADA = 33;
+  int AHIVA = 33;
   /** RegularExpression Id. */
-  int NUMERITO = 34;
+  int MIXCHELADA = 34;
   /** RegularExpression Id. */
-  int TEXTOLITERAL = 35;
+  int NUMERITO = 35;
   /** RegularExpression Id. */
-  int LETRALITERAL = 36;
+  int TEXTOLITERAL = 36;
   /** RegularExpression Id. */
-  int INVALID = 37;
+  int LETRALITERAL = 37;
+  /** RegularExpression Id. */
+  int INVALID = 38;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -96,6 +98,7 @@ public interface CarumaLangLexerConstants {
     "\"paraPapoi\"",
     "\"stopPlease\"",
     "\"DIOS\"",
+    "\"DIOSNO\"",
     "\"intCHELADA\"",
     "\"granito\"",
     "\"cadena\"",

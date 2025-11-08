@@ -1,11 +1,16 @@
 Caruma
-holahola
 
-intCHELADA x EstoEs 10
+intCHELADA x = 10
 @ 
-intCHELADA y EstoEs 20
+intCHELADA y = 20
 # 
-DIOS Abriendo "test" Cerrando
+holahola("test")
 $ 
+intCHELADA z = 30
+% 
+holahola("probando errores")
+& 
+mixCHELADA variable = 100
+^ 
 
 byebye
