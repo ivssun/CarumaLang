@@ -101,7 +101,7 @@ TOKEN : {
 
     // CHAR_LITERAL - Caracteres individuales entre comillas simples
     // Patrón: "'" (~["'","\n","\r"]) "'"
-|   < LETRALITERAL : "'" ( ~["'","\n","\r"] ) "'" >
+|   < LETRALITERAL : "'" ( ~["'","\n","\r"] ) "'" >5
 }
 
 // -------------------------------------------------------

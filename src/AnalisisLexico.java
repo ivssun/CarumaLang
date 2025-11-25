@@ -169,13 +169,13 @@ public class AnalisisLexico {
         
         // Mostrar tabla de errores si los hay
         if (!errores.isEmpty()) {
-            /*System.out.println("\n--------------------------------------");
+            System.out.println("\n--------------------------------------");
             System.out.println("     ERRORES LÉXICOS ENCONTRADOS        ");
             System.out.println("--------------------------------------");
             System.out.println();
             System.out.println("-----------------------------------------");
             System.out.println("│ No. │ Carácter    │ Línea  │ Columna │");
-            System.out.println("-----------------------------------------");*/
+            System.out.println("-----------------------------------------");
             
             for (int i = 0; i < errores.size(); i++) {
                 ErrorLexico error = errores.get(i);
@@ -184,13 +184,13 @@ public class AnalisisLexico {
                 if (caracterMostrar.equals("\t")) caracterMostrar = "\\t";
                 if (caracterMostrar.equals("\r")) caracterMostrar = "\\r";
                 
-                /*System.out.printf("│ %-4d │ %-11s │ %-6d │ %-7d │%n", 
+                System.out.printf("│ %-4d │ %-11s │ %-6d │ %-7d │%n",
                     i + 1,
                     caracterMostrar,
                     error.linea,
-                    error.columna);*/
+                    error.columna);
             }
-            //System.out.println("------------------------------------------");
+            System.out.println("------------------------------------------");
         }
         
         // Resumen final
@@ -244,7 +244,6 @@ public class AnalisisLexico {
             for (int i = 0; i < tokensValidos.size(); i++) {
                 elementos.add(new ElementoAnalisis(i + 1, tokensValidos.get(i)));
             }
-            
             // Agregar errores
             for (ErrorLexico error : errores) {
                 elementos.add(new ElementoAnalisis(error));
