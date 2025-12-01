@@ -1,0 +1,19 @@
+Caruma
+
+intCHELADA numero = 42
+granito pi = 3.14
+
+CaeCliente(numero > 50) {
+    holahola("El numero es mayor que 50")
+} SiNoCae {
+    holahola("El numero es menor o igual a 50")
+}
+
+intCHELADA contador = 0
+papoi(contador < 10) {
+    holahola("Contador: ")
+    holahola(contador)
+    contador = contador + 1
+}
+
+byebye

@@ -1,0 +1,310 @@
+// ============================================
+// ANALIZADOR SINTÁCTICO - CARUMALANG
+// Grammar.jj - Parser LL(1) Descendente Recursivo
+// ============================================
+
+options {
+    IGNORE_CASE = false;
+    STATIC = false;
+    BUILD_PARSER = true;  // IMPORTANTE: true para análisis sintáctico
+}
+
+PARSER_BEGIN(CarumaLangParser)
+
+package AnalizadorSintactico;
+
+public class CarumaLangParser {
+    public static void main(String[] args) {
+        System.out.println("Analizador Sintáctico CarumaLang - Parser LL(1)");
+    }
+}
+
+PARSER_END(CarumaLangParser)
+
+// -------------------------------------------------------
+// ------------------ ESPACIOS Y COMENTARIOS --------------
+// -------------------------------------------------------
+
+SKIP : {
+    " " 
+|   "\t" 
+|   "\r" 
+|   "\n"
+}
+
+// -------------------------------------------------------
+// ------------------- PALABRAS RESERVADAS ----------------
+// -------------------------------------------------------
+
+TOKEN : { 
+    // Estructura del Programa
+    < CARUMA : "Caruma" >
+|   < HOLAHOLA : "holahola" >
+|   < BYEBYE : "byebye" >
+
+    // Control de Flujo
+|   < CAECLIENTE : "CaeCliente" >
+|   < SINOCAE : "SiNoCae" >
+|   < PAPOI : "papoi" >
+|   < PARAPAPOI : "paraPapoi" >
+|   < STOPPLEASE : "stopPlease" >
+
+    // Valores Booleanos
+|   < DIOS : "DIOS" >
+|   < DIOSNO : "DIOSNO" >
+
+    // Tipos de Datos
+|   < INTCHELADA : "intCHELADA" >
+|   < GRANITO : "granito" >
+|   < CADENA : "cadena" >
+|   < CARACTER : "caracter" >
+}
+
+// -------------------------------------------------------
+// ---------------------- OPERADORES ----------------------
+// -------------------------------------------------------
+
+TOKEN : {
+    // Asignación
+    < ESTOES : "=" >
+
+    // Operadores Relacionales
+|   < MENORIGUALITOQUE : "<=" >
+|   < MAYORIGUALITOQUE : ">=" >
+|   < IGUALITO : "==" >
+|   < MAYORQUE : ">" >
+|   < MENORQUE : "<" >
+
+    // Operadores Aritméticos
+|   < PONER : "+" >
+|   < QUITAR : "-" >
+|   < SALEMAS : "*" >
+|   < SALEMENOS : "/" >
+}
+
+// -------------------------------------------------------
+// --------------------- DELIMITADORES --------------------
+// -------------------------------------------------------
+
+TOKEN : {
+    < ABRIENDO : "(" >
+|   < CERRANDO : ")" >
+|   < OPEN : "{" >
+|   < CLOSE : "}" >
+|   < AHIVA : ":" >
+|   < COMA : "," >
+}
+
+// -------------------------------------------------------
+// ---------------- IDENTIFICADORES Y LITERALES ------------
+// -------------------------------------------------------
+
+TOKEN : { 
+    < MIXCHELADA : (["a"-"z", "A"-"Z"]) (["a"-"z", "A"-"Z", "0"-"9"])* >
+|   < NUMERITO : (["0"-"9"])+ ( "." (["0"-"9"])+ )? >
+|   < TEXTOLITERAL : "\"" ( ~["\"","\n","\r"] )* "\"" >
+|   < LETRALITERAL : "'" ( ~["'","\n","\r"] ) "'" >
+}
+
+// =========================================================
+// ============== GRAMÁTICA SINTÁCTICA LL(1) ===============
+// =========================================================
+
+// -------------------------------------------------------
+// 1. PROGRAMA COMPLETO
+// -------------------------------------------------------
+
+void Programa() : {}
+{
+    <CARUMA>
+    Declaraciones()
+    <BYEBYE>
+    <EOF>
+}
+
+// -------------------------------------------------------
+// 2. DECLARACIONES
+// -------------------------------------------------------
+
+void Declaraciones() : {}
+{
+    (Declaracion())*
+}
+
+void Declaracion() : {}
+{
+    LOOKAHEAD(2)
+    DeclaracionVariable()
+|   Asignacion()
+|   EstructuraControl()
+|   Impresion()
+}
+
+// -------------------------------------------------------
+// 3. DECLARACIÓN DE VARIABLES
+// -------------------------------------------------------
+
+void DeclaracionVariable() : {}
+{
+    Tipo() ListaIdentificadores() [InicializacionOpt()]
+}
+
+void Tipo() : {}
+{
+    <INTCHELADA>
+|   <GRANITO>
+|   <CADENA>
+|   <CARACTER>
+}
+
+void ListaIdentificadores() : {}
+{
+    <MIXCHELADA> (<COMA> <MIXCHELADA>)*
+}
+
+void InicializacionOpt() : {}
+{
+    <ESTOES> ListaExpresiones()
+}
+
+void ListaExpresiones() : {}
+{
+    Expresion() (<COMA> Expresion())*
+}
+
+// -------------------------------------------------------
+// 4. ASIGNACIÓN
+// -------------------------------------------------------
+
+void Asignacion() : {}
+{
+    <MIXCHELADA> <ESTOES> Expresion()
+}
+
+// -------------------------------------------------------
+// 5. ESTRUCTURAS DE CONTROL
+// -------------------------------------------------------
+
+void EstructuraControl() : {}
+{
+    EstructuraIf()
+|   EstructuraWhile()
+|   EstructuraFor()
+}
+
+// -------------------------------------------------------
+// 5.1 ESTRUCTURA IF
+// -------------------------------------------------------
+
+void EstructuraIf() : {}
+{
+    <CAECLIENTE> <ABRIENDO> Condicion() <CERRANDO> 
+    <OPEN> Declaraciones() <CLOSE>
+    [ElseOpt()]
+}
+
+void ElseOpt() : {}
+{
+    <SINOCAE> <OPEN> Declaraciones() <CLOSE>
+}
+
+// -------------------------------------------------------
+// 5.2 ESTRUCTURA WHILE
+// -------------------------------------------------------
+
+void EstructuraWhile() : {}
+{
+    <PAPOI> <ABRIENDO> Condicion() <CERRANDO>
+    <OPEN> Declaraciones() <CLOSE>
+}
+
+// -------------------------------------------------------
+// 5.3 ESTRUCTURA FOR
+// -------------------------------------------------------
+
+void EstructuraFor() : {}
+{
+    <PARAPAPOI> <ABRIENDO> Inicializacion() <AHIVA> 
+    Condicion() <AHIVA> Incremento() <CERRANDO>
+    <OPEN> Declaraciones() <CLOSE>
+}
+
+void Inicializacion() : {}
+{
+    LOOKAHEAD(2)
+    Tipo() <MIXCHELADA> <ESTOES> Expresion()
+|   <MIXCHELADA> <ESTOES> Expresion()
+}
+
+void Incremento() : {}
+{
+    <MIXCHELADA> <ESTOES> Expresion()
+}
+
+// -------------------------------------------------------
+// 6. CONDICIONES
+// -------------------------------------------------------
+
+void Condicion() : {}
+{
+    ExpresionRelacional() (OperadorLogico() ExpresionRelacional())*
+}
+
+void ExpresionRelacional() : {}
+{
+    Expresion() OperadorRelacional() Expresion()
+}
+
+void OperadorRelacional() : {}
+{
+    <MENORQUE>
+|   <MAYORQUE>
+|   <MENORIGUALITOQUE>
+|   <MAYORIGUALITOQUE>
+|   <IGUALITO>
+}
+
+void OperadorLogico() : {}
+{
+    <DIOS>
+|   <DIOSNO>
+}
+
+// -------------------------------------------------------
+// 7. EXPRESIONES ARITMÉTICAS
+// -------------------------------------------------------
+
+void Expresion() : {}
+{
+    Termino() ((<PONER> | <QUITAR>) Termino())*
+}
+
+void Termino() : {}
+{
+    Factor() ((<SALEMAS> | <SALEMENOS>) Factor())*
+}
+
+void Factor() : {}
+{
+    <NUMERITO>
+|   <TEXTOLITERAL>
+|   <LETRALITERAL>
+|   <MIXCHELADA>
+|   <DIOS>
+|   <DIOSNO>
+|   <ABRIENDO> Expresion() <CERRANDO>
+}
+
+// -------------------------------------------------------
+// 8. IMPRESIÓN
+// -------------------------------------------------------
+
+void Impresion() : {}
+{
+    <HOLAHOLA> <ABRIENDO> [Argumentos()] <CERRANDO>
+}
+
+void Argumentos() : {}
+{
+    Expresion() (<COMA> Expresion())*
+}
