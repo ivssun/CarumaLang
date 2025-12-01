@@ -1,0 +1,394 @@
+Caruma
+
+intCHELADA numero1 = 100
+intCHELADA numero2 = 50
+intCHELADA resultado = 0
+
+granito decimal1 = 10.5
+granito decimal2 = 3.14
+granito resultadoDecimal = 0.0
+
+cadena mensaje = "CarumaLang - Prueba Completa"
+cadena saludo = "Hola Mundo"
+caracter letra = 'A'
+caracter simbolo = '@'
+
+intCHELADA verdadero = DIOS
+intCHELADA falso = DIOSNO
+
+holahola("========================================")
+holahola("   PRUEBA COMPLETA - CARUMALANG")
+holahola("========================================")
+holahola("")
+
+holahola("=== SECCION 1: OPERACIONES ARITMETICAS ===")
+holahola("")
+
+resultado = numero1 + numero2
+holahola("Suma: ")
+holahola(numero1)
+holahola(" + ")
+holahola(numero2)
+holahola(" = ")
+holahola(resultado)
+
+resultado = numero1 - numero2
+holahola("Resta: ")
+holahola(numero1)
+holahola(" - ")
+holahola(numero2)
+holahola(" = ")
+holahola(resultado)
+
+resultado = numero1 * numero2
+holahola("Multiplicacion: ")
+holahola(numero1)
+holahola(" * ")
+holahola(numero2)
+holahola(" = ")
+holahola(resultado)
+
+resultado = numero1 / numero2
+holahola("Division: ")
+holahola(numero1)
+holahola(" / ")
+holahola(numero2)
+holahola(" = ")
+holahola(resultado)
+
+resultadoDecimal = decimal1 + decimal2
+holahola("Suma Decimales: ")
+holahola(decimal1)
+holahola(" + ")
+holahola(decimal2)
+holahola(" = ")
+holahola(resultadoDecimal)
+
+resultadoDecimal = decimal1 * decimal2
+holahola("Multiplicacion Decimales: ")
+holahola(decimal1)
+holahola(" * ")
+holahola(decimal2)
+holahola(" = ")
+holahola(resultadoDecimal)
+
+holahola("")
+holahola("=== SECCION 2: OPERADORES RELACIONALES ===")
+holahola("")
+
+CaeCliente(numero1 > numero2) {
+    holahola("100 es MAYOR que 50 - CORRECTO")
+}
+
+CaeCliente(numero1 < numero2) {
+    holahola("100 es menor que 50")
+} SiNoCae {
+    holahola("100 NO es menor que 50 - CORRECTO")
+}
+
+CaeCliente(numero1 >= 100) {
+    holahola("100 es MAYOR O IGUAL a 100 - CORRECTO")
+}
+
+CaeCliente(numero2 <= 50) {
+    holahola("50 es MENOR O IGUAL a 50 - CORRECTO")
+}
+
+CaeCliente(numero1 == 100) {
+    holahola("100 es IGUAL a 100 - CORRECTO")
+}
+
+CaeCliente(numero1 == numero2) {
+    holahola("100 es igual a 50")
+} SiNoCae {
+    holahola("100 NO es igual a 50 - CORRECTO")
+}
+
+holahola("")
+holahola("=== SECCION 3: OPERACIONES COMPLEJAS ===")
+holahola("")
+
+intCHELADA a = 10
+intCHELADA b = 5
+intCHELADA c = 2
+
+resultado = a + b * c
+holahola("Precedencia: 10 + 5 * 2 = ")
+holahola(resultado)
+
+resultado = a * b - c
+holahola("Operacion: 10 * 5 - 2 = ")
+holahola(resultado)
+
+resultado = a / b + c
+holahola("Operacion: 10 / 5 + 2 = ")
+holahola(resultado)
+
+holahola("")
+holahola("=== SECCION 4: ESTRUCTURA WHILE (papoi) ===")
+holahola("")
+
+intCHELADA contador = 1
+holahola("Contando del 1 al 5:")
+
+papoi(contador <= 5) {
+    holahola("  Iteracion numero: ")
+    holahola(contador)
+    contador = contador + 1
+}
+
+intCHELADA regresivo = 10
+holahola("Cuenta regresiva del 10 al 6:")
+
+papoi(regresivo >= 6) {
+    holahola("  Cuenta: ")
+    holahola(regresivo)
+    regresivo = regresivo - 1
+}
+
+holahola("")
+holahola("=== SECCION 5: ESTRUCTURA FOR (paraPapoi) ===")
+holahola("")
+
+holahola("FOR del 1 al 5:")
+paraPapoi(intCHELADA i = 1 : i <= 5 : i = i + 1) {
+    holahola("  i = ")
+    holahola(i)
+}
+
+holahola("FOR del 10 al 15:")
+paraPapoi(intCHELADA j = 10 : j <= 15 : j = j + 1) {
+    holahola("  j = ")
+    holahola(j)
+}
+
+holahola("Tabla del 7:")
+paraPapoi(intCHELADA multiplicador = 1 : multiplicador <= 10 : multiplicador = multiplicador + 1) {
+    resultado = 7 * multiplicador
+    holahola("  7 x ")
+    holahola(multiplicador)
+    holahola(" = ")
+    holahola(resultado)
+}
+
+holahola("")
+holahola("=== SECCION 6: IF-ELSE ANIDADOS ===")
+holahola("")
+
+intCHELADA nota = 85
+
+CaeCliente(nota >= 90) {
+    holahola("Calificacion: EXCELENTE (A)")
+} SiNoCae {
+    CaeCliente(nota >= 80) {
+        holahola("Calificacion: MUY BUENO (B)")
+    } SiNoCae {
+        CaeCliente(nota >= 70) {
+            holahola("Calificacion: BUENO (C)")
+        } SiNoCae {
+            CaeCliente(nota >= 60) {
+                holahola("Calificacion: SUFICIENTE (D)")
+            } SiNoCae {
+                holahola("Calificacion: REPROBADO (F)")
+            }
+        }
+    }
+}
+
+holahola("")
+holahola("=== SECCION 7: VALORES BOOLEANOS ===")
+holahola("")
+
+intCHELADA esMayor = DIOS
+intCHELADA esMenor = DIOSNO
+
+holahola("Valor TRUE (DIOS): ")
+holahola(esMayor)
+
+holahola("Valor FALSE (DIOSNO): ")
+holahola(esMenor)
+
+CaeCliente(esMayor == DIOS) {
+    holahola("esMayor es VERDADERO - CORRECTO")
+}
+
+CaeCliente(esMenor == DIOSNO) {
+    holahola("esMenor es FALSO - CORRECTO")
+}
+
+holahola("")
+holahola("=== SECCION 8: TIPOS DE DATOS ===")
+holahola("")
+
+intCHELADA entero = 42
+granito flotante = 3.14159
+cadena texto = "CarumaLang 2024"
+caracter caracter1 = 'Z'
+
+holahola("Entero: ")
+holahola(entero)
+
+holahola("Flotante: ")
+holahola(flotante)
+
+holahola("Cadena: ")
+holahola(texto)
+
+holahola("Caracter: ")
+holahola(caracter1)
+
+holahola("")
+holahola("=== SECCION 9: EXPRESIONES COMPLEJAS ===")
+holahola("")
+
+intCHELADA x = 20
+intCHELADA y = 10
+intCHELADA z = 5
+
+resultado = x + y - z
+holahola("20 + 10 - 5 = ")
+holahola(resultado)
+
+resultado = x * y / z
+holahola("20 * 10 / 5 = ")
+holahola(resultado)
+
+resultado = x - y + z * 2
+holahola("20 - 10 + 5 * 2 = ")
+holahola(resultado)
+
+holahola("")
+holahola("=== SECCION 10: WHILE ANIDADO ===")
+holahola("")
+
+intCHELADA fila = 1
+holahola("Patron de asteriscos:")
+
+papoi(fila <= 3) {
+    intCHELADA columna = 1
+    
+    papoi(columna <= fila) {
+        holahola("*")
+        columna = columna + 1
+    }
+    
+    holahola("")
+    fila = fila + 1
+}
+
+holahola("")
+holahola("=== SECCION 11: VARIABLES MULTIPLES ===")
+holahola("")
+
+intCHELADA var1, var2, var3 = 10, 20, 30
+
+holahola("Variable 1: ")
+holahola(var1)
+
+holahola("Variable 2: ")
+holahola(var2)
+
+holahola("Variable 3: ")
+holahola(var3)
+
+granito pi, e = 3.14159, 2.71828
+
+holahola("Pi: ")
+holahola(pi)
+
+holahola("e: ")
+holahola(e)
+
+holahola("")
+holahola("=== SECCION 12: COMPARACIONES COMPLEJAS ===")
+holahola("")
+
+intCHELADA precio = 100
+intCHELADA descuento = 20
+intCHELADA precioFinal = 0
+
+precioFinal = precio - descuento
+
+CaeCliente(precioFinal < 100) {
+    holahola("Precio con descuento: ")
+    holahola(precioFinal)
+    holahola(" - Menor a 100")
+}
+
+CaeCliente(precioFinal >= 50) {
+    CaeCliente(precioFinal <= 100) {
+        holahola("Precio en rango 50-100 - CORRECTO")
+    }
+}
+
+holahola("")
+holahola("=== SECCION 13: IDENTIFICADORES LARGOS ===")
+holahola("")
+
+intCHELADA contadorDeIteraciones = 0
+granito promedioDeCalificaciones = 87.5
+cadena nombreCompletoDelEstudiante = "Juan Carlos Perez Lopez"
+caracter inicialDelApellido = 'P'
+
+holahola("Contador: ")
+holahola(contadorDeIteraciones)
+
+holahola("Promedio: ")
+holahola(promedioDeCalificaciones)
+
+holahola("Nombre: ")
+holahola(nombreCompletoDelEstudiante)
+
+holahola("Inicial: ")
+holahola(inicialDelApellido)
+
+holahola("")
+holahola("=== SECCION 14: FOR CON OPERACIONES ===")
+holahola("")
+
+holahola("Numeros pares del 2 al 10:")
+paraPapoi(intCHELADA par = 2 : par <= 10 : par = par + 2) {
+    holahola("  ")
+    holahola(par)
+}
+
+holahola("Multiplos de 5 del 5 al 25:")
+paraPapoi(intCHELADA mult5 = 5 : mult5 <= 25 : mult5 = mult5 + 5) {
+    holahola("  ")
+    holahola(mult5)
+}
+
+holahola("")
+holahola("=== SECCION 15: TODAS LAS COMPARACIONES ===")
+holahola("")
+
+intCHELADA num = 50
+
+CaeCliente(num < 100) {
+    holahola("50 < 100: VERDADERO")
+}
+
+CaeCliente(num > 25) {
+    holahola("50 > 25: VERDADERO")
+}
+
+CaeCliente(num <= 50) {
+    holahola("50 <= 50: VERDADERO")
+}
+
+CaeCliente(num >= 50) {
+    holahola("50 >= 50: VERDADERO")
+}
+
+CaeCliente(num == 50) {
+    holahola("50 == 50: VERDADERO")
+}
+
+holahola("")
+holahola("========================================")
+holahola("   FIN DE LA PRUEBA COMPLETA")
+holahola("========================================")
+holahola("")
+holahola("Todas las pruebas sintacticas completadas exitosamente!")
+
+byebye
