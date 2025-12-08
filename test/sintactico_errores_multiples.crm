@@ -1,0 +1,14 @@
+Caruma
+intCHELADA x = 10
+CaeCliente(x > 5) {
+    holahola("error: falta cerrar llave")
+intCHELADA y
+CaeCliente(y < 30) 
+    holahola("error: falta llave")
+
+intCHELADA z = + 15
+papoi(x) {
+    holahola("error: falta operador")
+}
+intCHELADA valido = 100
+byebye
