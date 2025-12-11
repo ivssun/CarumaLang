@@ -1,10 +1,10 @@
 Caruma
 
 intCHELADA x = 10
- 
+
 CaeCliente(x > 5 {
     holahola("ERROR: Falta cerrar parentesis")
-}
+
  
 intCHELADA y = 20
 CaeCliente(y < 30) 
@@ -18,7 +18,7 @@ papoi(x) {
     holahola("ERROR: Falta operador en condicion")
 }
 
-paraPapoi(intCHELADA i = 0 : i < 10 : i = i + 1) {
+paraPapoi(intCHELADA i = 0  i < 10 : i = i + 1) {
     holahola(i)
     holahola("ERROR: Falta dos puntos en FOR")
 }

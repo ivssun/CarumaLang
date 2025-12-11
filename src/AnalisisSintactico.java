@@ -8,25 +8,35 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Stack;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import AnalizadorSintactico.*;
 
 /**
- * Analizador Sintáctico con Modo Pánico
- * Detecta TODOS los errores sintácticos sin detenerse
+ * Analizador Sintáctico con Modo Pánico Mejorado
+ * Detecta TODOS los errores sintácticos y léxicos sin detenerse
  */
 public class AnalisisSintactico {
     
-    // Clase para almacenar información de errores sintácticos
-    static class ErrorSintactico {
+    // Tipos de error
+    enum TipoError {
+        LEXICO,
+        SINTACTICO
+    }
+    
+    // Clase para almacenar información de errores
+    static class ErrorAnalisis {
+        TipoError tipo;
         String mensaje;
         int linea;
         int columna;
         String tokenEncontrado;
         String tokenEsperado;
         
-        ErrorSintactico(String mensaje, int linea, int columna, String tokenEncontrado, String tokenEsperado) {
+        ErrorAnalisis(TipoError tipo, String mensaje, int linea, int columna, 
+                     String tokenEncontrado, String tokenEsperado) {
+            this.tipo = tipo;
             this.mensaje = mensaje;
             this.linea = linea;
             this.columna = columna;
@@ -35,17 +45,34 @@ public class AnalisisSintactico {
         }
     }
     
+    // Información de contexto para delimitadores
+    static class DelimitadorInfo {
+        int linea;
+        int columna;
+        String tipo;           // "{", "(", etc.
+        String contexto;       // "CaeCliente", "papoi", etc.
+        int id;                // ID único para emparejar
+        
+        DelimitadorInfo(int linea, int columna, String tipo, String contexto, int id) {
+            this.linea = linea;
+            this.columna = columna;
+            this.tipo = tipo;
+            this.contexto = contexto;
+            this.id = id;
+        }
+    }
+    
     // Parser personalizado con recuperación de errores
     static class ParserConRecuperacion extends CarumaLangParser {
-        private List<ErrorSintactico> errores = new ArrayList<>();
+        private List<ErrorAnalisis> errores = new ArrayList<>();
         private int contadorErrores = 0;
-        private static final int MAX_ERRORES = 50;
+        private static final int MAX_ERRORES = 100;
         
         public ParserConRecuperacion(java.io.Reader stream) {
             super(stream);
         }
         
-        public List<ErrorSintactico> getErrores() {
+        public List<ErrorAnalisis> getErrores() {
             return errores;
         }
         
@@ -64,13 +91,15 @@ public class AnalisisSintactico {
                 
                 // Verificar BYEBYE
                 if (!verificarYConsumirToken(BYEBYE, "byebye")) {
-                    registrarError("Falta 'byebye' al final del programa", 
+                    registrarError(TipoError.SINTACTICO,
+                                 "Falta 'byebye' al final del programa", 
                                  getLineaActual(), getColumnaActual(), 
                                  getTokenActual(), "byebye");
                 }
                 
             } catch (Exception e) {
-                registrarError("Error inesperado: " + e.getMessage(), 
+                registrarError(TipoError.SINTACTICO,
+                             "Error inesperado: " + e.getMessage(), 
                              getLineaActual(), getColumnaActual(), 
                              getTokenActual(), "");
             }
@@ -89,7 +118,8 @@ public class AnalisisSintactico {
                         Declaracion();
                     } else {
                         // Token inesperado - registrar error y avanzar
-                        registrarError("Token inesperado en declaraciones", 
+                        registrarError(TipoError.SINTACTICO,
+                                     "Token inesperado en declaraciones", 
                                      tok.beginLine, tok.beginColumn,
                                      tok.image, "tipo de dato, identificador o estructura de control");
                         getNextToken();
@@ -99,7 +129,8 @@ public class AnalisisSintactico {
                     capturarErrorParseException(e);
                     recuperarHastaInicioDeclaracion();
                 } catch (TokenMgrError e) {
-                    registrarError("Error léxico: " + e.getMessage(), 
+                    registrarError(TipoError.LEXICO,
+                                 "Error léxico: " + e.getMessage(), 
                                  tok.beginLine, tok.beginColumn,
                                  tok.image, "");
                     getNextToken();
@@ -134,7 +165,8 @@ public class AnalisisSintactico {
                 getNextToken();
                 return true;
             } else {
-                registrarError("Se esperaba '" + nombreToken + "'", 
+                registrarError(TipoError.SINTACTICO,
+                             "Se esperaba '" + nombreToken + "'", 
                              tok.beginLine, tok.beginColumn,
                              tok.image, nombreToken);
                 return false;
@@ -201,7 +233,7 @@ public class AnalisisSintactico {
             // Extraer tokens esperados
             String esperado = extraerTokensEsperados(e);
             
-            registrarError(mensaje, linea, columna, tokenEncontrado, esperado);
+            registrarError(TipoError.SINTACTICO, mensaje, linea, columna, tokenEncontrado, esperado);
         }
         
         /**
@@ -227,12 +259,12 @@ public class AnalisisSintactico {
         }
         
         /**
-         * Registra un error sintáctico
+         * Registra un error
          */
-        private void registrarError(String mensaje, int linea, int columna, 
+        private void registrarError(TipoError tipo, String mensaje, int linea, int columna, 
                                    String tokenEncontrado, String tokenEsperado) {
-            errores.add(new ErrorSintactico(mensaje, linea, columna, 
-                                          tokenEncontrado, tokenEsperado));
+            errores.add(new ErrorAnalisis(tipo, mensaje, linea, columna, 
+                                         tokenEncontrado, tokenEsperado));
             contadorErrores++;
         }
     }
@@ -270,10 +302,13 @@ public class AnalisisSintactico {
         System.out.println("========================================");
         System.out.println("Archivo: " + fileName + "\n");
         
-        // PASO 1: Pre-análisis para detectar llaves sin cerrar
-        List<ErrorSintactico> erroresLlaves = preAnalizarLlaves(fileName);
+        // PASO 1: Pre-análisis para detectar errores léxicos
+        List<ErrorAnalisis> erroresLexicos = preAnalizarErroresLexicos(fileName);
         
-        // PASO 2: Análisis sintáctico normal
+        // PASO 2: Pre-análisis para detectar delimitadores sin emparejar
+        List<ErrorAnalisis> erroresDelimitadores = preAnalizarDelimitadores(fileName);
+        
+        // PASO 3: Análisis sintáctico normal
         BufferedReader reader = new BufferedReader(new FileReader(fileName));
         ParserConRecuperacion parser = new ParserConRecuperacion(reader);
         
@@ -282,10 +317,17 @@ public class AnalisisSintactico {
         // Ejecutar análisis con recuperación de errores
         parser.ProgramaConRecuperacion();
         
-        List<ErrorSintactico> errores = parser.getErrores();
+        List<ErrorAnalisis> errores = parser.getErrores();
         
-        // PASO 3: Combinar errores de llaves con errores sintácticos
-        errores.addAll(erroresLlaves);
+        // PASO 4: Combinar todos los errores
+        errores.addAll(erroresLexicos);
+        errores.addAll(erroresDelimitadores);
+        
+        // Ordenar errores por línea y columna
+        errores.sort((e1, e2) -> {
+            if (e1.linea != e2.linea) return Integer.compare(e1.linea, e2.linea);
+            return Integer.compare(e1.columna, e2.columna);
+        });
         
         // Mostrar resultados
         if (errores.isEmpty()) {
@@ -293,7 +335,7 @@ public class AnalisisSintactico {
             System.out.println("         ANALISIS EXITOSO");
             System.out.println("========================================");
             System.out.println("\nEl programa cumple con la sintaxis de CarumaLang");
-            System.out.println("No se encontraron errores sintacticos");
+            System.out.println("No se encontraron errores");
             System.out.println("\n========================================");
         } else {
             mostrarErrores(errores);
@@ -306,11 +348,10 @@ public class AnalisisSintactico {
     }
     
     /**
-     * Pre-análisis del archivo para detectar llaves sin cerrar
-     * Lee el archivo token por token y verifica el balance de delimitadores
+     * Pre-análisis del archivo para detectar errores léxicos
      */
-    private static List<ErrorSintactico> preAnalizarLlaves(String fileName) throws IOException {
-        List<ErrorSintactico> errores = new ArrayList<>();
+    private static List<ErrorAnalisis> preAnalizarErroresLexicos(String fileName) throws IOException {
+        List<ErrorAnalisis> errores = new ArrayList<>();
         
         try {
             BufferedReader reader = new BufferedReader(new FileReader(fileName));
@@ -319,77 +360,168 @@ public class AnalisisSintactico {
             AnalizadorSintactico.CarumaLangParserTokenManager tokenManager = 
                 new AnalizadorSintactico.CarumaLangParserTokenManager(stream);
             
-            List<InfoLlave> pilaLlaves = new ArrayList<>();
-            List<InfoLlave> pilaParentesis = new ArrayList<>();
-            
             AnalizadorSintactico.Token tok;
-            AnalizadorSintactico.Token tokenPrevio = null;
             
-            // Leer todos los tokens
+            // Leer todos los tokens y detectar errores léxicos
             while (true) {
-                tok = tokenManager.getNextToken();
-                
-                if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.EOF) {
-                    break;
-                }
-                
-                // Rastrear llaves
-                if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.OPEN) {  // {
-                    String contexto = determinarContexto(tokenPrevio);
-                    pilaLlaves.add(new InfoLlave(tok.beginLine, tok.beginColumn, contexto, "{"));
-                } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.CLOSE) {  // }
-                    if (pilaLlaves.isEmpty()) {
-                        errores.add(new ErrorSintactico(
-                            "Llave de cierre '}' sin llave de apertura correspondiente",
-                            tok.beginLine, tok.beginColumn, "}", "{"));
-                    } else {
-                        pilaLlaves.remove(pilaLlaves.size() - 1);
+                try {
+                    tok = tokenManager.getNextToken();
+                    
+                    if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.EOF) {
+                        break;
                     }
-                } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.ABRIENDO) {  // (
-                    pilaParentesis.add(new InfoLlave(tok.beginLine, tok.beginColumn, "expresión", "("));
-                } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.CERRANDO) {  // )
-                    if (!pilaParentesis.isEmpty()) {
-                        pilaParentesis.remove(pilaParentesis.size() - 1);
+                    
+                } catch (TokenMgrError e) {
+                    // Error léxico detectado
+                    String mensaje = e.getMessage();
+                    int linea = stream.getEndLine();
+                    int columna = stream.getEndColumn();
+                    
+                    // Extraer carácter inválido
+                    String caracterInvalido = "?";
+                    if (mensaje.contains("Encountered: \"")) {
+                        int start = mensaje.indexOf("Encountered: \"") + 14;
+                        int end = mensaje.indexOf("\"", start);
+                        if (end > start) {
+                            caracterInvalido = mensaje.substring(start, end);
+                        }
+                    }
+                    
+                    errores.add(new ErrorAnalisis(
+                        TipoError.LEXICO,
+                        "Caracter no reconocido",
+                        linea, columna,
+                        caracterInvalido,
+                        "token valido"));
+                    
+                    // Intentar recuperarse avanzando un carácter
+                    try {
+                        stream.readChar();
+                    } catch (IOException ioException) {
+                        break;
                     }
                 }
-                
-                tokenPrevio = tok;
-            }
-            
-            // Reportar llaves sin cerrar
-            for (InfoLlave info : pilaLlaves) {
-                errores.add(new ErrorSintactico(
-                    "Llave de apertura '{' sin cerrar en " + info.contexto,
-                    info.linea, info.columna, "{", "}"));
-            }
-            
-            // Reportar paréntesis sin cerrar
-            for (InfoLlave info : pilaParentesis) {
-                errores.add(new ErrorSintactico(
-                    "Paréntesis de apertura '(' sin cerrar",
-                    info.linea, info.columna, "(", ")"));
             }
             
             reader.close();
             
         } catch (Exception e) {
-            System.err.println("Error en pre-análisis de llaves: " + e.getMessage());
+            System.err.println("Error en pre-análisis léxico: " + e.getMessage());
         }
         
         return errores;
     }
     
     /**
-     * Determina el contexto basado en el token previo
+     * Pre-análisis mejorado para detectar delimitadores sin emparejar
+     * Usa un sistema de pila con contexto para detectar emparejamientos incorrectos
      */
-    private static String determinarContexto(AnalizadorSintactico.Token tokenPrevio) {
-        if (tokenPrevio == null) {
-            return "bloque de código";
+    private static List<ErrorAnalisis> preAnalizarDelimitadores(String fileName) throws IOException {
+        List<ErrorAnalisis> errores = new ArrayList<>();
+        
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            AnalizadorSintactico.SimpleCharStream stream = 
+                new AnalizadorSintactico.SimpleCharStream(reader);
+            AnalizadorSintactico.CarumaLangParserTokenManager tokenManager = 
+                new AnalizadorSintactico.CarumaLangParserTokenManager(stream);
+            
+            Stack<DelimitadorInfo> pilaLlaves = new Stack<>();
+            Stack<DelimitadorInfo> pilaParentesis = new Stack<>();
+            
+            int contadorId = 0;
+            AnalizadorSintactico.Token tok;
+            List<AnalizadorSintactico.Token> historialTokens = new ArrayList<>();
+            
+            // Leer todos los tokens
+            while (true) {
+                try {
+                    tok = tokenManager.getNextToken();
+                } catch (TokenMgrError e) {
+                    // Ignorar errores léxicos aquí (ya se manejan en preAnalizarErroresLexicos)
+                    try {
+                        stream.readChar();
+                        continue;
+                    } catch (IOException ioException) {
+                        break;
+                    }
+                }
+                
+                if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.EOF) {
+                    break;
+                }
+                
+                historialTokens.add(tok);
+                
+                // Rastrear llaves
+                if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.OPEN) {  // {
+                    String contexto = determinarContexto(historialTokens);
+                    pilaLlaves.push(new DelimitadorInfo(
+                        tok.beginLine, tok.beginColumn, "{", contexto, ++contadorId));
+                    
+                } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.CLOSE) {  // }
+                    if (pilaLlaves.isEmpty()) {
+                        errores.add(new ErrorAnalisis(
+                            TipoError.SINTACTICO,
+                            "Llave de cierre '}' sin apertura correspondiente",
+                            tok.beginLine, tok.beginColumn, "}", "{"));
+                    } else {
+                        // Emparejar correctamente
+                        pilaLlaves.pop();
+                    }
+                    
+                } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.ABRIENDO) {  // (
+                    String contexto = determinarContextoParentesis(historialTokens);
+                    pilaParentesis.push(new DelimitadorInfo(
+                        tok.beginLine, tok.beginColumn, "(", contexto, ++contadorId));
+                    
+                } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.CERRANDO) {  // )
+                    if (pilaParentesis.isEmpty()) {
+                        errores.add(new ErrorAnalisis(
+                            TipoError.SINTACTICO,
+                            "Parentesis de cierre ')' sin apertura correspondiente",
+                            tok.beginLine, tok.beginColumn, ")", "("));
+                    } else {
+                        pilaParentesis.pop();
+                    }
+                }
+            }
+            
+            // Reportar llaves sin cerrar (con contexto específico)
+            while (!pilaLlaves.isEmpty()) {
+                DelimitadorInfo info = pilaLlaves.pop();
+                errores.add(new ErrorAnalisis(
+                    TipoError.SINTACTICO,
+                    "Llave de apertura '{' sin cerrar en " + info.contexto,
+                    info.linea, info.columna, "{", "}"));
+            }
+            
+            // Reportar paréntesis sin cerrar
+            while (!pilaParentesis.isEmpty()) {
+                DelimitadorInfo info = pilaParentesis.pop();
+                errores.add(new ErrorAnalisis(
+                    TipoError.SINTACTICO,
+                    "Parentesis '(' sin cerrar en " + info.contexto,
+                    info.linea, info.columna, "(", ")"));
+            }
+            
+            reader.close();
+            
+        } catch (Exception e) {
+            System.err.println("Error en pre-análisis de delimitadores: " + e.getMessage());
         }
         
-        // Retroceder hasta 10 tokens para encontrar palabra clave
-        AnalizadorSintactico.Token tok = tokenPrevio;
-        for (int i = 0; i < 10 && tok != null; i++) {
+        return errores;
+    }
+    
+    /**
+     * Determina el contexto de una llave basándose en el historial de tokens
+     */
+    private static String determinarContexto(List<AnalizadorSintactico.Token> historial) {
+        // Buscar hacia atrás las últimas 10 tokens
+        for (int i = historial.size() - 2; i >= 0 && i >= historial.size() - 10; i--) {
+            AnalizadorSintactico.Token tok = historial.get(i);
+            
             if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.CAECLIENTE) {
                 return "CaeCliente (if)";
             } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.SINOCAE) {
@@ -399,45 +531,66 @@ public class AnalisisSintactico {
             } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.PARAPAPOI) {
                 return "paraPapoi (for)";
             }
+        }
+        
+        return "bloque de codigo";
+    }
+    
+    /**
+     * Determina el contexto de un paréntesis
+     */
+    private static String determinarContextoParentesis(List<AnalizadorSintactico.Token> historial) {
+        // Buscar hacia atrás
+        for (int i = historial.size() - 2; i >= 0 && i >= historial.size() - 5; i--) {
+            AnalizadorSintactico.Token tok = historial.get(i);
             
-            // No podemos retroceder más sin estructura compleja
-            break;
+            if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.HOLAHOLA) {
+                return "holahola (print)";
+            } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.CAECLIENTE) {
+                return "CaeCliente (condicion)";
+            } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.PAPOI) {
+                return "papoi (condicion)";
+            } else if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.PARAPAPOI) {
+                return "paraPapoi (encabezado)";
+            }
         }
         
-        return "bloque de código";
+        return "expresion";
     }
     
     /**
-     * Clase auxiliar para información de llaves en pre-análisis
+     * Muestra la tabla de errores en consola (SIN columna DESCRIPCION)
      */
-    static class InfoLlave {
-        int linea;
-        int columna;
-        String contexto;
-        String tipo;
-        
-        InfoLlave(int linea, int columna, String contexto, String tipo) {
-            this.linea = linea;
-            this.columna = columna;
-            this.contexto = contexto;
-            this.tipo = tipo;
-        }
-    }
-    
-    /**
-     * Muestra la tabla de errores en consola
-     */
-    private static void mostrarErrores(List<ErrorSintactico> errores) {
+    private static void mostrarErrores(List<ErrorAnalisis> errores) {
         System.out.println("========================================");
-        System.out.println("     ERRORES SINTACTICOS ENCONTRADOS");
+        System.out.println("        ERRORES ENCONTRADOS");
         System.out.println("========================================");
         System.out.println();
-        System.out.println("----------------------------------------------------------------------------------------");
-        System.out.println("│ No. │ Línea │ Col │ Encontrado      │ Esperado              │ Descripción");
-        System.out.println("----------------------------------------------------------------------------------------");
+        
+        // Contar errores por tipo
+        int erroresLexicos = 0;
+        int erroresSintacticos = 0;
+        for (ErrorAnalisis error : errores) {
+            if (error.tipo == TipoError.LEXICO) {
+                erroresLexicos++;
+            } else {
+                erroresSintacticos++;
+            }
+        }
+        
+        System.out.println("Errores Lexicos: " + erroresLexicos);
+        System.out.println("Errores Sintacticos: " + erroresSintacticos);
+        System.out.println("Total: " + errores.size());
+        System.out.println();
+        
+        System.out.println("--------------------------------------------------------------------------------");
+        System.out.println("│ No. │ Tipo       │ Linea │ Col │ Encontrado      │ Esperado");
+        System.out.println("--------------------------------------------------------------------------------");
         
         for (int i = 0; i < errores.size(); i++) {
-            ErrorSintactico error = errores.get(i);
+            ErrorAnalisis error = errores.get(i);
+            
+            String tipoStr = error.tipo == TipoError.LEXICO ? "LEXICO" : "SINTACTICO";
             
             String tokenEncontrado = error.tokenEncontrado;
             if (tokenEncontrado.length() > 15) {
@@ -445,76 +598,61 @@ public class AnalisisSintactico {
             }
             
             String tokenEsperado = error.tokenEsperado;
-            if (tokenEsperado.length() > 20) {
-                tokenEsperado = tokenEsperado.substring(0, 17) + "...";
+            if (tokenEsperado.length() > 30) {
+                tokenEsperado = tokenEsperado.substring(0, 27) + "...";
             }
             
-            // Extraer descripción corta del mensaje
-            String descripcion = extraerDescripcionCorta(error.mensaje);
-            if (descripcion.length() > 40) {
-                descripcion = descripcion.substring(0, 37) + "...";
-            }
-            
-            System.out.printf("│ %-4d│ %-6d│ %-4d│ %-15s │ %-21s │ %s%n",
+            System.out.printf("│ %-4d│ %-10s │ %-6d│ %-4d│ %-15s │ %s%n",
                 i + 1,
+                tipoStr,
                 error.linea,
                 error.columna,
                 tokenEncontrado,
-                tokenEsperado,
-                descripcion);
+                tokenEsperado);
         }
         
-        System.out.println("----------------------------------------------------------------------------------------");
+        System.out.println("--------------------------------------------------------------------------------");
         System.out.println();
         
         System.out.println("========================================");
         System.out.println("        RESUMEN DEL ANALISIS");
         System.out.println("========================================");
         System.out.println();
-        System.out.println("Total de errores sintacticos: " + errores.size());
+        System.out.println("Total de errores: " + errores.size());
+        System.out.println("  - Errores lexicos: " + erroresLexicos);
+        System.out.println("  - Errores sintacticos: " + erroresSintacticos);
+        System.out.println();
         System.out.println("Estado: ANALISIS COMPLETADO CON ERRORES");
         System.out.println();
-        System.out.println("Revise la tabla de errores para mas detalles");
         System.out.println("Se genero un archivo .errores con informacion detallada");
         System.out.println();
         System.out.println("========================================");
     }
     
     /**
-     * Extrae una descripción corta del mensaje de error
-     */
-    private static String extraerDescripcionCorta(String mensaje) {
-        if (mensaje.contains("Encountered")) {
-            return "Token inesperado";
-        } else if (mensaje.contains("esperaba")) {
-            return "Token esperado no encontrado";
-        } else if (mensaje.contains("Falta")) {
-            return mensaje.split("\\.")[0];
-        } else {
-            // Tomar primeras palabras
-            String[] palabras = mensaje.split(" ");
-            StringBuilder corto = new StringBuilder();
-            for (int i = 0; i < Math.min(5, palabras.length); i++) {
-                if (i > 0) corto.append(" ");
-                corto.append(palabras[i]);
-            }
-            return corto.toString();
-        }
-    }
-    
-    /**
      * Genera archivo con información detallada de errores
      */
-    private static void generarArchivoErrores(String archivoFuente, List<ErrorSintactico> errores) {
+    private static void generarArchivoErrores(String archivoFuente, List<ErrorAnalisis> errores) {
         try {
             String nombreSalida = archivoFuente.replace(".crm", ".errores");
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             String fechaActual = sdf.format(new Date());
             
+            // Contar errores por tipo
+            int erroresLexicos = 0;
+            int erroresSintacticos = 0;
+            for (ErrorAnalisis error : errores) {
+                if (error.tipo == TipoError.LEXICO) {
+                    erroresLexicos++;
+                } else {
+                    erroresSintacticos++;
+                }
+            }
+            
             try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreSalida))) {
                 
                 // ENCABEZADO
-                writer.write("# REPORTE DE ERRORES SINTACTICOS - CARUMALANG");
+                writer.write("# REPORTE DE ERRORES - CARUMALANG");
                 writer.newLine();
                 writer.write("# Archivo fuente: " + archivoFuente);
                 writer.newLine();
@@ -522,17 +660,23 @@ public class AnalisisSintactico {
                 writer.newLine();
                 writer.write("# Total errores: " + errores.size());
                 writer.newLine();
+                writer.write("# Errores lexicos: " + erroresLexicos);
+                writer.newLine();
+                writer.write("# Errores sintacticos: " + erroresSintacticos);
+                writer.newLine();
                 writer.newLine();
                 
                 // SECCION DE ERRORES
-                writer.write("[ERRORES_SINTACTICOS]");
+                writer.write("[ERRORES]");
                 writer.newLine();
                 writer.newLine();
                 
                 for (int i = 0; i < errores.size(); i++) {
-                    ErrorSintactico error = errores.get(i);
+                    ErrorAnalisis error = errores.get(i);
                     
                     writer.write("ERROR #" + (i + 1));
+                    writer.newLine();
+                    writer.write("  Tipo: " + error.tipo);
                     writer.newLine();
                     writer.write("  Linea: " + error.linea);
                     writer.newLine();
@@ -551,6 +695,10 @@ public class AnalisisSintactico {
                 writer.write("[RESUMEN]");
                 writer.newLine();
                 writer.write("TOTAL_ERRORES=" + errores.size());
+                writer.newLine();
+                writer.write("ERRORES_LEXICOS=" + erroresLexicos);
+                writer.newLine();
+                writer.write("ERRORES_SINTACTICOS=" + erroresSintacticos);
                 writer.newLine();
                 
                 String estado = errores.isEmpty() ? "SIN_ERRORES" : "CON_ERRORES";
