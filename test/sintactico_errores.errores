@@ -1,13 +1,21 @@
 # REPORTE DE ERRORES - CARUMALANG
-# Archivo fuente: C:\Users\olimp\Desktop\sintactico_errores_multiples2.crm
-# Fecha analisis: 2025-12-10 21:27:48
-# Total errores: 17
-# Errores lexicos: 0
-# Errores sintacticos: 17
+# Archivo fuente: C:\Users\olimp\Mi unidad\UV\7mo Semestre\Lenguajes Formales y Compiladores - 8 creditos\CarumaLang\test\sintactico_errores.crm
+# Fecha analisis: 2025-12-10 23:59:41
+# Total errores: 23
+# Errores lexicos: 4
+# Errores sintacticos: 19
 
 [ERRORES]
 
 ERROR #1
+  Tipo: LEXICO
+  Linea: 4
+  Columna: 1
+  Token encontrado: #
+  Token esperado: token valido
+  Descripcion: Caracter no reconocido: '#' (ASCII: 35)
+
+ERROR #2
   Tipo: SINTACTICO
   Linea: 5
   Columna: 11
@@ -15,13 +23,13 @@ ERROR #1
   Token esperado: )
   Descripcion: Parentesis '(' sin cerrar en CaeCliente (condicion)
 
-ERROR #2
+ERROR #3
   Tipo: SINTACTICO
   Linea: 5
-  Columna: 18
+  Columna: 20
   Token encontrado: {
   Token esperado: "DIOS", "DIOSNO", "+", "-", "*"
-  Descripcion: Encountered " "{" "{ "" at line 5, column 18.
+  Descripcion: Encountered " "{" "{ "" at line 5, column 20.
 Was expecting one of:
     "DIOS" ...
     "DIOSNO" ...
@@ -32,18 +40,34 @@ Was expecting one of:
     ")" ...
     
 
-ERROR #3
+ERROR #4
+  Tipo: SINTACTICO
+  Linea: 7
+  Columna: 1
+  Token encontrado: }
+  Token esperado: tipo de dato, identificador o estructura de control
+  Descripcion: Token inesperado en declaraciones
+
+ERROR #5
   Tipo: SINTACTICO
   Linea: 11
-  Columna: 5
+  Columna: 1
   Token encontrado: holahola
   Token esperado: "{"
-  Descripcion: Encountered " "holahola" "holahola "" at line 11, column 5.
+  Descripcion: Encountered " "holahola" "holahola "" at line 11, column 1.
 Was expecting:
     "{" ...
     
 
-ERROR #4
+ERROR #6
+  Tipo: SINTACTICO
+  Linea: 12
+  Columna: 1
+  Token encontrado: }
+  Token esperado: {
+  Descripcion: Llave de cierre '}' sin apertura correspondiente
+
+ERROR #7
   Tipo: SINTACTICO
   Linea: 12
   Columna: 1
@@ -51,7 +75,15 @@ ERROR #4
   Token esperado: tipo de dato, identificador o estructura de control
   Descripcion: Token inesperado en declaraciones
 
-ERROR #5
+ERROR #8
+  Tipo: LEXICO
+  Linea: 13
+  Columna: 1
+  Token encontrado: @
+  Token esperado: token valido
+  Descripcion: Caracter no reconocido: '@' (ASCII: 64)
+
+ERROR #9
   Tipo: SINTACTICO
   Linea: 14
   Columna: 16
@@ -68,13 +100,13 @@ Was expecting one of:
     <LETRALITERAL> ...
     
 
-ERROR #6
+ERROR #10
   Tipo: SINTACTICO
   Linea: 17
-  Columna: 8
+  Columna: 11
   Token encontrado: )
   Token esperado: "<=", ">=", "==", ">", "<"
-  Descripcion: Encountered " ")" ") "" at line 17, column 8.
+  Descripcion: Encountered " ")" ") "" at line 17, column 11.
 Was expecting one of:
     "<=" ...
     ">=" ...
@@ -87,7 +119,7 @@ Was expecting one of:
     "/" ...
     
 
-ERROR #7
+ERROR #11
   Tipo: SINTACTICO
   Linea: 19
   Columna: 1
@@ -95,13 +127,13 @@ ERROR #7
   Token esperado: tipo de dato, identificador o estructura de control
   Descripcion: Token inesperado en declaraciones
 
-ERROR #8
+ERROR #12
   Tipo: SINTACTICO
   Linea: 21
-  Columna: 29
+  Columna: 30
   Token encontrado: i
   Token esperado: "+", "-", "*", "/", ":"
-  Descripcion: Encountered " <MIXCHELADA> "i "" at line 21, column 29.
+  Descripcion: Encountered " <MIXCHELADA> "i "" at line 21, column 30.
 Was expecting one of:
     "+" ...
     "-" ...
@@ -110,34 +142,34 @@ Was expecting one of:
     ":" ...
     
 
-ERROR #9
+ERROR #13
   Tipo: SINTACTICO
   Linea: 21
-  Columna: 31
+  Columna: 32
   Token encontrado: <
   Token esperado: "="
-  Descripcion: Encountered " "<" "< "" at line 21, column 31.
+  Descripcion: Encountered " "<" "< "" at line 21, column 32.
 Was expecting:
     "=" ...
     
 
-ERROR #10
+ERROR #14
   Tipo: SINTACTICO
   Linea: 21
-  Columna: 47
+  Columna: 49
   Token encontrado: )
   Token esperado: tipo de dato, identificador o estructura de control
   Descripcion: Token inesperado en declaraciones
 
-ERROR #11
+ERROR #15
   Tipo: SINTACTICO
   Linea: 21
-  Columna: 49
+  Columna: 51
   Token encontrado: {
   Token esperado: tipo de dato, identificador o estructura de control
   Descripcion: Token inesperado en declaraciones
 
-ERROR #12
+ERROR #16
   Tipo: SINTACTICO
   Linea: 24
   Columna: 1
@@ -145,7 +177,15 @@ ERROR #12
   Token esperado: tipo de dato, identificador o estructura de control
   Descripcion: Token inesperado en declaraciones
 
-ERROR #13
+ERROR #17
+  Tipo: LEXICO
+  Linea: 25
+  Columna: 1
+  Token encontrado: $
+  Token esperado: token valido
+  Descripcion: Caracter no reconocido: '$' (ASCII: 36)
+
+ERROR #18
   Tipo: SINTACTICO
   Linea: 26
   Columna: 19
@@ -153,13 +193,13 @@ ERROR #13
   Token esperado: }
   Descripcion: Llave de apertura '{' sin cerrar en CaeCliente (if)
 
-ERROR #14
+ERROR #19
   Tipo: SINTACTICO
-  Linea: 30
+  Linea: 31
   Columna: 1
   Token encontrado: holahola
   Token esperado: "DIOS", "DIOSNO", "(", <MIXCHELADA>, <NUMERITO>
-  Descripcion: Encountered " "holahola" "holahola "" at line 30, column 1.
+  Descripcion: Encountered " "holahola" "holahola "" at line 31, column 1.
 Was expecting one of:
     "DIOS" ...
     "DIOSNO" ...
@@ -170,13 +210,13 @@ Was expecting one of:
     <LETRALITERAL> ...
     
 
-ERROR #15
+ERROR #20
   Tipo: SINTACTICO
-  Linea: 33
+  Linea: 34
   Columna: 1
   Token encontrado: holahola
   Token esperado: "DIOS", "DIOSNO", "(", <MIXCHELADA>, <NUMERITO>
-  Descripcion: Encountered " "holahola" "holahola "" at line 33, column 1.
+  Descripcion: Encountered " "holahola" "holahola "" at line 34, column 1.
 Was expecting one of:
     "DIOS" ...
     "DIOSNO" ...
@@ -187,26 +227,37 @@ Was expecting one of:
     <LETRALITERAL> ...
     
 
-ERROR #16
+ERROR #21
+  Tipo: LEXICO
+  Linea: 39
+  Columna: 5
+  Token encontrado: #
+  Token esperado: token valido
+  Descripcion: Caracter no reconocido: '#' (ASCII: 35)
+
+ERROR #22
   Tipo: SINTACTICO
-  Linea: 38
-  Columna: 31
+  Linea: 39
+  Columna: 7
+  Token encontrado: (
+  Token esperado: "="
+  Descripcion: Encountered " "(" "( "" at line 39, column 7.
+Was expecting:
+    "=" ...
+    
+
+ERROR #23
+  Tipo: SINTACTICO
+  Linea: 39
+  Columna: 32
   Token encontrado: 
   Token esperado: byebye
   Descripcion: Se esperaba 'byebye'
 
-ERROR #17
-  Tipo: SINTACTICO
-  Linea: 38
-  Columna: 31
-  Token encontrado: 
-  Token esperado: byebye
-  Descripcion: Falta 'byebye' al final del programa
-
 [RESUMEN]
-TOTAL_ERRORES=17
-ERRORES_LEXICOS=0
-ERRORES_SINTACTICOS=17
+TOTAL_ERRORES=23
+ERRORES_LEXICOS=4
+ERRORES_SINTACTICOS=19
 ESTADO=CON_ERRORES
 
 [FIN]

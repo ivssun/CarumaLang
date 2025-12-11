@@ -1,16 +1,16 @@
 Caruma
 
 intCHELADA x = 10
-
+#
 CaeCliente(x > 5 {
     holahola("ERROR: Falta cerrar parentesis")
-
+}
  
 intCHELADA y = 20
 CaeCliente(y < 30) 
     holahola("ERROR: Falta llave de apertura")
 }
-
+@
 intCHELADA z = + 15
 holahola("ERROR: Token inesperado en expresion")
 
@@ -22,9 +22,10 @@ paraPapoi(intCHELADA i = 0  i < 10 : i = i + 1) {
     holahola(i)
     holahola("ERROR: Falta dos puntos en FOR")
 }
-
+$
 CaeCliente(x > 0) {
     holahola("ERROR: Falta cierre de bloque")
+
 
 intCHELADA w =
 holahola("ERROR: Variable sin inicializacion valida")
@@ -35,4 +36,4 @@ holahola("ERROR: Expresion incompleta")
 intCHELADA valido = 100
 holahola("Declaracion valida para continuar")
 
-holahola("ERROR: Falta byebye")
+hola#("ERROR: Falta byebye")

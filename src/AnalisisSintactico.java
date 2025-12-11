@@ -13,10 +13,6 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import AnalizadorSintactico.*;
 
-/**
- * Analizador Sintáctico y Léxico Integrado con Modo Pánico Mejorado
- * Detecta TODOS los errores léxicos y sintácticos sin detenerse
- */
 public class AnalisisSintactico {
     
     // Tipos de error
@@ -96,11 +92,13 @@ public class AnalisisSintactico {
                     // Registrar error con posición segura
                     try {
                         Token tok = getToken(1);
-                        registrarError(TipoError.SINTACTICO,
-                                     "Error durante análisis de declaraciones", 
-                                     tok.beginLine,    // Posición correcta
-                                     tok.beginColumn,  // Posición correcta
-                                     tok.image, "");
+                        if (tok != null) {
+                            registrarError(TipoError.SINTACTICO,
+                                         "Error durante análisis de declaraciones", 
+                                         tok.beginLine,
+                                         tok.beginColumn,
+                                         tok.image, "");
+                        }
                     } catch (Exception ex) {
                         // Si no podemos obtener el token, usar posición por defecto
                         registrarError(TipoError.SINTACTICO,
@@ -109,29 +107,24 @@ public class AnalisisSintactico {
                     }
                 }
                 
-                // Verificar BYEBYE
-                try {
-                    if (!verificarYConsumirToken(BYEBYE, "byebye")) {
-                        Token tok = getToken(1);
-                        registrarError(TipoError.SINTACTICO,
-                                     "Falta 'byebye' al final del programa", 
-                                     tok.beginLine,    // Posición correcta
-                                     tok.beginColumn,  // Posición correcta
-                                     tok.image, "byebye");
-                    }
-                } catch (Exception e) {
-                    // Ignorar errores al verificar byebye
-                }
+		// Verificar BYEBYE
+		try {
+    			verificarYConsumirToken(BYEBYE, "byebye");
+		} catch (Exception e) {
+    		// Ignorar errores al verificar byebye
+		}
                 
             } catch (Exception e) {
                 // Error general - intentar capturar posición
                 try {
                     Token tok = getToken(1);
-                    registrarError(TipoError.SINTACTICO,
-                                 "Error inesperado: " + e.getMessage(), 
-                                 tok.beginLine,    // Posición correcta
-                                 tok.beginColumn,  // Posición correcta
-                                 tok.image, "");
+                    if (tok != null) {
+                        registrarError(TipoError.SINTACTICO,
+                                     "Error inesperado: " + e.getMessage(), 
+                                     tok.beginLine,
+                                     tok.beginColumn,
+                                     tok.image, "");
+                    }
                 } catch (Exception ex) {
                     registrarError(TipoError.SINTACTICO,
                                  "Error inesperado: " + e.getMessage(), 
@@ -152,7 +145,7 @@ public class AnalisisSintactico {
                     Token tok = getToken(1);
                     
                     // Verificar si llegamos al final
-                    if (tok.kind == BYEBYE || tok.kind == EOF) {
+                    if (tok == null || tok.kind == BYEBYE || tok.kind == EOF) {
                         break;
                     }
                     
@@ -175,8 +168,8 @@ public class AnalisisSintactico {
                         // Token inesperado - registrar con posición CORRECTA del token actual
                         registrarError(TipoError.SINTACTICO,
                                      "Token inesperado en declaraciones", 
-                                     tok.beginLine,      // Usar beginLine del token
-                                     tok.beginColumn,    // Usar beginColumn del token
+                                     tok.beginLine,
+                                     tok.beginColumn,
                                      tok.image, 
                                      "tipo de dato, identificador o estructura de control");
                         avanzarTokenSeguro();
@@ -222,6 +215,8 @@ public class AnalisisSintactico {
         private boolean esInicioDeDeclaracion() {
             try {
                 Token tok = getToken(1);
+                if (tok == null) return false;
+                
                 return tok.kind == INTCHELADA || 
                        tok.kind == GRANITO || 
                        tok.kind == CADENA || 
@@ -244,6 +239,15 @@ public class AnalisisSintactico {
         private boolean verificarYConsumirToken(int tipoEsperado, String nombreToken) {
             try {
                 Token tok = getToken(1);
+                if (tok == null) {
+                    registrarError(TipoError.SINTACTICO,
+                                 "Se esperaba '" + nombreToken + "'", 
+                                 -1, -1,
+                                 "<EOF>", 
+                                 nombreToken);
+                    return false;
+                }
+                
                 if (tok.kind == tipoEsperado) {
                     getNextToken();
                     return true;
@@ -251,8 +255,8 @@ public class AnalisisSintactico {
                     // Registrar error con la posición CORRECTA del token encontrado
                     registrarError(TipoError.SINTACTICO,
                                  "Se esperaba '" + nombreToken + "'", 
-                                 tok.beginLine,      // Posición correcta
-                                 tok.beginColumn,    // Posición correcta
+                                 tok.beginLine,
+                                 tok.beginColumn,
                                  tok.image, 
                                  nombreToken);
                     return false;
@@ -276,7 +280,7 @@ public class AnalisisSintactico {
                 try {
                     Token tok = getToken(1);
                     
-                    if (tok.kind == EOF) {
+                    if (tok == null || tok.kind == EOF) {
                         return;
                     }
                     
@@ -308,51 +312,25 @@ public class AnalisisSintactico {
         }
         
         /**
-         * Obtiene la línea del token actual de forma segura
-         */
-        private int getLineaActual() {
-            try {
-                return getToken(1).beginLine;
-            } catch (Exception e) {
-                return -1;
-            }
-        }
-        
-        /**
-         * Obtiene la columna del token actual de forma segura
-         */
-        private int getColumnaActual() {
-            try {
-                return getToken(1).beginColumn;
-            } catch (Exception e) {
-                return -1;
-            }
-        }
-        
-        /**
-         * Obtiene el texto del token actual de forma segura
-         */
-        private String getTokenActual() {
-            try {
-                return getToken(1).image;
-            } catch (Exception e) {
-                return "<desconocido>";
-            }
-        }
-        
-        /**
          * Captura y procesa ParseException con posiciones correctas
+         * CORRECCIÓN: Manejo robusto de tokens nulos
          */
         private void capturarErrorParseException(ParseException e) {
             String mensaje = e.getMessage();
             
             // IMPORTANTE: El token de error es currentToken.next
-            Token tokError = e.currentToken.next;
+            Token tokError = null;
+            
+            if (e.currentToken != null && e.currentToken.next != null) {
+                tokError = e.currentToken.next;
+            } else if (e.currentToken != null) {
+                tokError = e.currentToken;
+            }
             
             // Extraer posición CORRECTA del token que causó el error
-            int linea = tokError.beginLine;
-            int columna = tokError.beginColumn;
-            String tokenEncontrado = tokError.image;
+            int linea = tokError != null ? tokError.beginLine : -1;
+            int columna = tokError != null ? tokError.beginColumn : -1;
+            String tokenEncontrado = tokError != null ? tokError.image : "<desconocido>";
             
             // Extraer tokens esperados
             String esperado = extraerTokensEsperados(e);
@@ -428,19 +406,19 @@ public class AnalisisSintactico {
         System.out.println("Archivo: " + fileName + "\n");
         
         // PASO 1: Pre-análisis para detectar errores léxicos
-        System.out.println("Paso 1/4: Analizando errores lexicos...");
+        //System.out.println("Paso 1/4: Analizando errores lexicos...");
         List<ErrorAnalisis> erroresLexicos = preAnalizarErroresLexicos(fileName);
         
         // PASO 2: Pre-análisis para detectar delimitadores sin emparejar
-        System.out.println("Paso 2/4: Analizando delimitadores...");
+        //System.out.println("Paso 2/4: Analizando delimitadores...");
         List<ErrorAnalisis> erroresDelimitadores = preAnalizarDelimitadores(fileName);
         
         // PASO 3: Crear versión limpia del archivo (sin errores léxicos)
-        System.out.println("Paso 3/4: Preparando analisis sintactico...");
+        //System.out.println("Paso 3/4: Preparando analisis sintactico...");
         String archivoLimpio = crearArchivoLimpio(fileName);
         
         // PASO 4: Análisis sintáctico sobre archivo limpio
-        System.out.println("Paso 4/4: Analizando estructura sintactica...\n");
+        //System.out.println("Paso 4/4: Analizando estructura sintactica...\n");
         List<ErrorAnalisis> erroresSintacticos = new ArrayList<>();
         
         if (archivoLimpio != null) {
@@ -484,47 +462,64 @@ public class AnalisisSintactico {
     }
     
     /**
-     * Crea una versión "limpia" del archivo reemplazando caracteres inválidos
-     * con espacios para que el parser sintáctico pueda continuar
+     * CORRECCIÓN CRÍTICA: Crea versión limpia preservando saltos de línea
+     * 
+     * Antes: convertía todo en una línea → posiciones incorrectas
+     * Ahora: mantiene estructura de líneas → posiciones correctas
      */
     private static String crearArchivoLimpio(String fileName) {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            BufferedReader fileReader = new BufferedReader(new FileReader(fileName));
             StringBuilder archivoLimpio = new StringBuilder();
-            AnalizadorSintactico.SimpleCharStream stream = 
-                new AnalizadorSintactico.SimpleCharStream(reader);
-            AnalizadorSintactico.CarumaLangParserTokenManager tokenManager = 
-                new AnalizadorSintactico.CarumaLangParserTokenManager(stream);
+            String linea;
+            int numeroLinea = 1;
             
-            AnalizadorSintactico.Token tok;
-            boolean continuar = true;
-            
-            while (continuar) {
-                try {
-                    tok = tokenManager.getNextToken();
-                    
-                    if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.EOF) {
-                        continuar = false;
-                    } else {
-                        // Agregar espacios para mantener las posiciones
-                        archivoLimpio.append(tok.image);
-                        archivoLimpio.append(" ");
-                    }
-                    
-                } catch (TokenMgrError e) {
-                    // Reemplazar carácter inválido con espacio
-                    archivoLimpio.append(" ");
-                    
-                    // Intentar avanzar
+            // Leer línea por línea para preservar estructura
+            while ((linea = fileReader.readLine()) != null) {
+                // Crear un stream para esta línea
+                java.io.StringReader lineReader = new java.io.StringReader(linea);
+                AnalizadorSintactico.SimpleCharStream stream = 
+                    new AnalizadorSintactico.SimpleCharStream(lineReader);
+                AnalizadorSintactico.CarumaLangParserTokenManager tokenManager = 
+                    new AnalizadorSintactico.CarumaLangParserTokenManager(stream);
+                
+                StringBuilder lineaLimpia = new StringBuilder();
+                boolean continuar = true;
+                
+                // Procesar tokens de esta línea
+                while (continuar) {
                     try {
-                        stream.readChar();
-                    } catch (IOException ioException) {
-                        continuar = false;
+                        AnalizadorSintactico.Token tok = tokenManager.getNextToken();
+                        
+                        if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.EOF) {
+                            continuar = false;
+                        } else {
+                            // Agregar token con espacio
+                            lineaLimpia.append(tok.image);
+                            lineaLimpia.append(" ");
+                        }
+                        
+                    } catch (TokenMgrError e) {
+                        // Reemplazar carácter inválido con espacio
+                        lineaLimpia.append(" ");
+                        
+                        // Intentar avanzar
+                        try {
+                            stream.readChar();
+                        } catch (IOException ioException) {
+                            continuar = false;
+                        }
                     }
                 }
+                
+                // Agregar línea limpia al resultado
+                archivoLimpio.append(lineaLimpia.toString().trim());
+                archivoLimpio.append("\n");  // ← CRÍTICO: Preservar salto de línea
+                
+                numeroLinea++;
             }
             
-            reader.close();
+            fileReader.close();
             return archivoLimpio.toString();
             
         } catch (Exception e) {
@@ -856,12 +851,12 @@ public class AnalisisSintactico {
         
         // Mostrar tabla de ERRORES SINTÁCTICOS si existen
         if (erroresSintacticos > 0) {
-            System.out.println("---------------------------------------------------------------------------------");
+            System.out.println("--------------------------------------------------------------------------------------------");
             System.out.println("                      ERRORES SINTACTICOS ENCONTRADOS");
-            System.out.println("---------------------------------------------------------------------------------");
+            System.out.println("--------------------------------------------------------------------------------------------");
             System.out.println();
             System.out.println("--------------------------------------------------------------------------------------------");
-            System.out.println("│ No. │ Linea │ Col │ Token Encontrado │ Token Esperado              │ Descripcion");
+            System.out.println("│ No. │ Linea │ Col │ Token Encontrado │ Token Esperado              ");
             System.out.println("--------------------------------------------------------------------------------------------");
             
             int contadorSintactico = 1;
@@ -873,8 +868,8 @@ public class AnalisisSintactico {
                     }
                     
                     String tokenEsperado = error.tokenEsperado;
-                    if (tokenEsperado.length() > 27) {
-                        tokenEsperado = tokenEsperado.substring(0, 24) + "...";
+                    if (tokenEsperado.length() > 47) {
+                        tokenEsperado = tokenEsperado.substring(0, 44) + "...";
                     }
                     
                     String descripcion = error.mensaje;
@@ -882,13 +877,12 @@ public class AnalisisSintactico {
                         descripcion = descripcion.substring(0, 47) + "...";
                     }
                     
-                    System.out.printf("│ %-4d│ %-6d│ %-4d│ %-16s │ %-27s │ %s%n",
+                    System.out.printf("│ %-4d│ %-6d│ %-4d│ %-16s │ %-47s %n",
                         contadorSintactico++,
                         error.linea,
                         error.columna,
                         tokenEncontrado,
-                        tokenEsperado,
-                        descripcion);
+                        tokenEsperado);
                 }
             }
             System.out.println("--------------------------------------------------------------------------------------------");

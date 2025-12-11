@@ -1,0 +1,16 @@
+# REPORTE DE ERRORES - CARUMALANG
+# Archivo fuente: C:\Users\olimp\Mi unidad\UV\7mo Semestre\Lenguajes Formales y Compiladores - 8 creditos\CarumaLang\test\sintactico_prueba.crm
+# Fecha analisis: 2025-12-10 23:59:19
+# Total errores: 0
+# Errores lexicos: 0
+# Errores sintacticos: 0
+
+[ERRORES]
+
+[RESUMEN]
+TOTAL_ERRORES=0
+ERRORES_LEXICOS=0
+ERRORES_SINTACTICOS=0
+ESTADO=SIN_ERRORES
+
+[FIN]
