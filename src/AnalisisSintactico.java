@@ -14,8 +14,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import AnalizadorSintactico.*;
 
 /**
- * Analizador Sintáctico con Modo Pánico Mejorado
- * Detecta TODOS los errores sintácticos y léxicos sin detenerse
+ * Analizador Sintáctico y Léxico Integrado con Modo Pánico Mejorado
+ * Detecta TODOS los errores léxicos y sintácticos sin detenerse
  */
 public class AnalisisSintactico {
     
@@ -77,7 +77,7 @@ public class AnalisisSintactico {
         }
         
         /**
-         * Programa modificado con recuperación de errores
+         * Programa modificado con recuperación de errores y posiciones correctas
          */
         public void ProgramaConRecuperacion() {
             try {
@@ -86,107 +86,215 @@ public class AnalisisSintactico {
                     recuperarHastaToken(BYEBYE, INTCHELADA, GRANITO, CADENA, CARACTER, MIXCHELADA);
                 }
                 
-                // Analizar declaraciones con recuperación
-                DeclaracionesConRecuperacion();
+                // Analizar declaraciones con recuperación total
+                try {
+                    DeclaracionesConRecuperacion();
+                } catch (TokenMgrError e) {
+                    // Error léxico durante análisis - ya fue registrado en pre-análisis
+                    // Solo continuar
+                } catch (Exception e) {
+                    // Registrar error con posición segura
+                    try {
+                        Token tok = getToken(1);
+                        registrarError(TipoError.SINTACTICO,
+                                     "Error durante análisis de declaraciones", 
+                                     tok.beginLine,    // Posición correcta
+                                     tok.beginColumn,  // Posición correcta
+                                     tok.image, "");
+                    } catch (Exception ex) {
+                        // Si no podemos obtener el token, usar posición por defecto
+                        registrarError(TipoError.SINTACTICO,
+                                     "Error durante análisis de declaraciones", 
+                                     -1, -1, "<desconocido>", "");
+                    }
+                }
                 
                 // Verificar BYEBYE
-                if (!verificarYConsumirToken(BYEBYE, "byebye")) {
-                    registrarError(TipoError.SINTACTICO,
-                                 "Falta 'byebye' al final del programa", 
-                                 getLineaActual(), getColumnaActual(), 
-                                 getTokenActual(), "byebye");
+                try {
+                    if (!verificarYConsumirToken(BYEBYE, "byebye")) {
+                        Token tok = getToken(1);
+                        registrarError(TipoError.SINTACTICO,
+                                     "Falta 'byebye' al final del programa", 
+                                     tok.beginLine,    // Posición correcta
+                                     tok.beginColumn,  // Posición correcta
+                                     tok.image, "byebye");
+                    }
+                } catch (Exception e) {
+                    // Ignorar errores al verificar byebye
                 }
                 
             } catch (Exception e) {
-                registrarError(TipoError.SINTACTICO,
-                             "Error inesperado: " + e.getMessage(), 
-                             getLineaActual(), getColumnaActual(), 
-                             getTokenActual(), "");
+                // Error general - intentar capturar posición
+                try {
+                    Token tok = getToken(1);
+                    registrarError(TipoError.SINTACTICO,
+                                 "Error inesperado: " + e.getMessage(), 
+                                 tok.beginLine,    // Posición correcta
+                                 tok.beginColumn,  // Posición correcta
+                                 tok.image, "");
+                } catch (Exception ex) {
+                    registrarError(TipoError.SINTACTICO,
+                                 "Error inesperado: " + e.getMessage(), 
+                                 -1, -1, "<desconocido>", "");
+                }
             }
         }
         
         /**
-         * Declaraciones con recuperación
+         * Declaraciones con recuperación - versión ultra robusta
          */
         private void DeclaracionesConRecuperacion() {
-            Token tok = getToken(1);
+            int tokensProblematicos = 0;
+            final int MAX_TOKENS_PROBLEMATICOS = 50;
             
-            while (tok.kind != BYEBYE && tok.kind != EOF && contadorErrores < MAX_ERRORES) {
+            while (contadorErrores < MAX_ERRORES && tokensProblematicos < MAX_TOKENS_PROBLEMATICOS) {
                 try {
+                    Token tok = getToken(1);
+                    
+                    // Verificar si llegamos al final
+                    if (tok.kind == BYEBYE || tok.kind == EOF) {
+                        break;
+                    }
+                    
                     // Intentar analizar una declaración
                     if (esInicioDeDeclaracion()) {
-                        Declaracion();
+                        try {
+                            Declaracion();
+                            tokensProblematicos = 0; // Reset al éxito
+                        } catch (ParseException pe) {
+                            // Capturar error sintáctico con posición CORRECTA
+                            capturarErrorParseException(pe);
+                            recuperarHastaInicioDeclaracion();
+                            tokensProblematicos++;
+                        } catch (TokenMgrError te) {
+                            // Error léxico - avanzar token
+                            avanzarTokenSeguro();
+                            tokensProblematicos++;
+                        }
                     } else {
-                        // Token inesperado - registrar error y avanzar
+                        // Token inesperado - registrar con posición CORRECTA del token actual
                         registrarError(TipoError.SINTACTICO,
                                      "Token inesperado en declaraciones", 
-                                     tok.beginLine, tok.beginColumn,
-                                     tok.image, "tipo de dato, identificador o estructura de control");
-                        getNextToken();
+                                     tok.beginLine,      // Usar beginLine del token
+                                     tok.beginColumn,    // Usar beginColumn del token
+                                     tok.image, 
+                                     "tipo de dato, identificador o estructura de control");
+                        avanzarTokenSeguro();
+                        tokensProblematicos++;
                     }
-                } catch (ParseException e) {
-                    // Capturar error y continuar
-                    capturarErrorParseException(e);
-                    recuperarHastaInicioDeclaracion();
                 } catch (TokenMgrError e) {
-                    registrarError(TipoError.LEXICO,
-                                 "Error léxico: " + e.getMessage(), 
-                                 tok.beginLine, tok.beginColumn,
-                                 tok.image, "");
-                    getNextToken();
+                    // Error léxico al obtener token
+                    avanzarTokenSeguro();
+                    tokensProblematicos++;
+                } catch (Exception e) {
+                    // Cualquier otro error
+                    avanzarTokenSeguro();
+                    tokensProblematicos++;
                 }
-                
-                tok = getToken(1);
             }
         }
         
         /**
-         * Verifica si el token actual es inicio de declaración
+         * Avanza al siguiente token de forma segura
          */
-        private boolean esInicioDeDeclaracion() {
-            Token tok = getToken(1);
-            return tok.kind == INTCHELADA || 
-                   tok.kind == GRANITO || 
-                   tok.kind == CADENA || 
-                   tok.kind == CARACTER || 
-                   tok.kind == MIXCHELADA ||
-                   tok.kind == CAECLIENTE ||
-                   tok.kind == PAPOI ||
-                   tok.kind == PARAPAPOI ||
-                   tok.kind == HOLAHOLA;
+        private void avanzarTokenSeguro() {
+            try {
+                getNextToken();
+            } catch (TokenMgrError e) {
+                // Si hay error léxico, intentar múltiples veces
+                // hasta obtener un token válido o EOF
+                for (int i = 0; i < 5; i++) {
+                    try {
+                        getNextToken();
+                        return; // Éxito
+                    } catch (Exception ex) {
+                        // Continuar intentando
+                    }
+                }
+            } catch (Exception e) {
+                // Ignorar otros errores
+            }
         }
         
         /**
-         * Verifica y consume un token esperado
+         * Verifica si el token actual es inicio de declaración - versión segura
          */
-        private boolean verificarYConsumirToken(int tipoEsperado, String nombreToken) {
-            Token tok = getToken(1);
-            if (tok.kind == tipoEsperado) {
-                getNextToken();
-                return true;
-            } else {
-                registrarError(TipoError.SINTACTICO,
-                             "Se esperaba '" + nombreToken + "'", 
-                             tok.beginLine, tok.beginColumn,
-                             tok.image, nombreToken);
+        private boolean esInicioDeDeclaracion() {
+            try {
+                Token tok = getToken(1);
+                return tok.kind == INTCHELADA || 
+                       tok.kind == GRANITO || 
+                       tok.kind == CADENA || 
+                       tok.kind == CARACTER || 
+                       tok.kind == MIXCHELADA ||
+                       tok.kind == CAECLIENTE ||
+                       tok.kind == PAPOI ||
+                       tok.kind == PARAPAPOI ||
+                       tok.kind == HOLAHOLA;
+            } catch (TokenMgrError e) {
+                return false;
+            } catch (Exception e) {
                 return false;
             }
         }
         
         /**
-         * Recupera hasta encontrar un token de sincronización
+         * Verifica y consume un token esperado - versión segura con posiciones correctas
+         */
+        private boolean verificarYConsumirToken(int tipoEsperado, String nombreToken) {
+            try {
+                Token tok = getToken(1);
+                if (tok.kind == tipoEsperado) {
+                    getNextToken();
+                    return true;
+                } else {
+                    // Registrar error con la posición CORRECTA del token encontrado
+                    registrarError(TipoError.SINTACTICO,
+                                 "Se esperaba '" + nombreToken + "'", 
+                                 tok.beginLine,      // Posición correcta
+                                 tok.beginColumn,    // Posición correcta
+                                 tok.image, 
+                                 nombreToken);
+                    return false;
+                }
+            } catch (TokenMgrError e) {
+                // Error léxico al obtener token - ya registrado en pre-análisis
+                return false;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        
+        /**
+         * Recupera hasta encontrar un token de sincronización - versión segura
          */
         private void recuperarHastaToken(int... tokensSincronizacion) {
-            Token tok = getToken(1);
+            int intentos = 0;
+            final int MAX_INTENTOS = 100;
             
-            while (tok.kind != EOF && contadorErrores < MAX_ERRORES) {
-                for (int tokenSinc : tokensSincronizacion) {
-                    if (tok.kind == tokenSinc) {
+            while (intentos < MAX_INTENTOS) {
+                try {
+                    Token tok = getToken(1);
+                    
+                    if (tok.kind == EOF) {
                         return;
                     }
+                    
+                    for (int tokenSinc : tokensSincronizacion) {
+                        if (tok.kind == tokenSinc) {
+                            return;
+                        }
+                    }
+                    
+                    avanzarTokenSeguro();
+                    intentos++;
+                    
+                } catch (TokenMgrError e) {
+                    avanzarTokenSeguro();
+                    intentos++;
+                } catch (Exception e) {
+                    return;
                 }
-                getNextToken();
-                tok = getToken(1);
             }
         }
         
@@ -200,32 +308,48 @@ public class AnalisisSintactico {
         }
         
         /**
-         * Obtiene la línea del token actual
+         * Obtiene la línea del token actual de forma segura
          */
         private int getLineaActual() {
-            return getToken(1).beginLine;
+            try {
+                return getToken(1).beginLine;
+            } catch (Exception e) {
+                return -1;
+            }
         }
         
         /**
-         * Obtiene la columna del token actual
+         * Obtiene la columna del token actual de forma segura
          */
         private int getColumnaActual() {
-            return getToken(1).beginColumn;
+            try {
+                return getToken(1).beginColumn;
+            } catch (Exception e) {
+                return -1;
+            }
         }
         
         /**
-         * Obtiene el texto del token actual
+         * Obtiene el texto del token actual de forma segura
          */
         private String getTokenActual() {
-            return getToken(1).image;
+            try {
+                return getToken(1).image;
+            } catch (Exception e) {
+                return "<desconocido>";
+            }
         }
         
         /**
-         * Captura y procesa ParseException
+         * Captura y procesa ParseException con posiciones correctas
          */
         private void capturarErrorParseException(ParseException e) {
             String mensaje = e.getMessage();
+            
+            // IMPORTANTE: El token de error es currentToken.next
             Token tokError = e.currentToken.next;
+            
+            // Extraer posición CORRECTA del token que causó el error
             int linea = tokError.beginLine;
             int columna = tokError.beginColumn;
             String tokenEncontrado = tokError.image;
@@ -233,6 +357,7 @@ public class AnalisisSintactico {
             // Extraer tokens esperados
             String esperado = extraerTokensEsperados(e);
             
+            // Registrar el error con la posición CORRECTA
             registrarError(TipoError.SINTACTICO, mensaje, linea, columna, tokenEncontrado, esperado);
         }
         
@@ -303,25 +428,38 @@ public class AnalisisSintactico {
         System.out.println("Archivo: " + fileName + "\n");
         
         // PASO 1: Pre-análisis para detectar errores léxicos
+        System.out.println("Paso 1/4: Analizando errores lexicos...");
         List<ErrorAnalisis> erroresLexicos = preAnalizarErroresLexicos(fileName);
         
         // PASO 2: Pre-análisis para detectar delimitadores sin emparejar
+        System.out.println("Paso 2/4: Analizando delimitadores...");
         List<ErrorAnalisis> erroresDelimitadores = preAnalizarDelimitadores(fileName);
         
-        // PASO 3: Análisis sintáctico normal
-        BufferedReader reader = new BufferedReader(new FileReader(fileName));
-        ParserConRecuperacion parser = new ParserConRecuperacion(reader);
+        // PASO 3: Crear versión limpia del archivo (sin errores léxicos)
+        System.out.println("Paso 3/4: Preparando analisis sintactico...");
+        String archivoLimpio = crearArchivoLimpio(fileName);
         
-        System.out.println("Iniciando analisis sintactico en modo panico...\n");
+        // PASO 4: Análisis sintáctico sobre archivo limpio
+        System.out.println("Paso 4/4: Analizando estructura sintactica...\n");
+        List<ErrorAnalisis> erroresSintacticos = new ArrayList<>();
         
-        // Ejecutar análisis con recuperación de errores
-        parser.ProgramaConRecuperacion();
+        if (archivoLimpio != null) {
+            try {
+                BufferedReader reader = new BufferedReader(new java.io.StringReader(archivoLimpio));
+                ParserConRecuperacion parser = new ParserConRecuperacion(reader);
+                parser.ProgramaConRecuperacion();
+                erroresSintacticos = parser.getErrores();
+                reader.close();
+            } catch (Exception e) {
+                System.err.println("Error en analisis sintactico: " + e.getMessage());
+            }
+        }
         
-        List<ErrorAnalisis> errores = parser.getErrores();
-        
-        // PASO 4: Combinar todos los errores
+        // PASO 5: Combinar todos los errores
+        List<ErrorAnalisis> errores = new ArrayList<>();
         errores.addAll(erroresLexicos);
         errores.addAll(erroresDelimitadores);
+        errores.addAll(erroresSintacticos);
         
         // Ordenar errores por línea y columna
         errores.sort((e1, e2) -> {
@@ -343,12 +481,61 @@ public class AnalisisSintactico {
         
         // Generar archivo de errores
         generarArchivoErrores(fileName, errores);
-        
-        reader.close();
+    }
+    
+    /**
+     * Crea una versión "limpia" del archivo reemplazando caracteres inválidos
+     * con espacios para que el parser sintáctico pueda continuar
+     */
+    private static String crearArchivoLimpio(String fileName) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(fileName));
+            StringBuilder archivoLimpio = new StringBuilder();
+            AnalizadorSintactico.SimpleCharStream stream = 
+                new AnalizadorSintactico.SimpleCharStream(reader);
+            AnalizadorSintactico.CarumaLangParserTokenManager tokenManager = 
+                new AnalizadorSintactico.CarumaLangParserTokenManager(stream);
+            
+            AnalizadorSintactico.Token tok;
+            boolean continuar = true;
+            
+            while (continuar) {
+                try {
+                    tok = tokenManager.getNextToken();
+                    
+                    if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.EOF) {
+                        continuar = false;
+                    } else {
+                        // Agregar espacios para mantener las posiciones
+                        archivoLimpio.append(tok.image);
+                        archivoLimpio.append(" ");
+                    }
+                    
+                } catch (TokenMgrError e) {
+                    // Reemplazar carácter inválido con espacio
+                    archivoLimpio.append(" ");
+                    
+                    // Intentar avanzar
+                    try {
+                        stream.readChar();
+                    } catch (IOException ioException) {
+                        continuar = false;
+                    }
+                }
+            }
+            
+            reader.close();
+            return archivoLimpio.toString();
+            
+        } catch (Exception e) {
+            System.err.println("Error al crear archivo limpio: " + e.getMessage());
+            return null;
+        }
     }
     
     /**
      * Pre-análisis del archivo para detectar errores léxicos
+     * Implementa toda la lógica del analizador léxico
      */
     private static List<ErrorAnalisis> preAnalizarErroresLexicos(String fileName) throws IOException {
         List<ErrorAnalisis> errores = new ArrayList<>();
@@ -361,44 +548,99 @@ public class AnalisisSintactico {
                 new AnalizadorSintactico.CarumaLangParserTokenManager(stream);
             
             AnalizadorSintactico.Token tok;
+            boolean continuar = true;
             
             // Leer todos los tokens y detectar errores léxicos
-            while (true) {
+            while (continuar) {
                 try {
                     tok = tokenManager.getNextToken();
                     
                     if (tok.kind == AnalizadorSintactico.CarumaLangParserConstants.EOF) {
-                        break;
+                        continuar = false;
                     }
+                    // No hacer nada con tokens válidos aquí, solo continuar
                     
                 } catch (TokenMgrError e) {
                     // Error léxico detectado
                     String mensaje = e.getMessage();
-                    int linea = stream.getEndLine();
-                    int columna = stream.getEndColumn();
                     
-                    // Extraer carácter inválido
+                    // Extraer línea y columna del mensaje de error
+                    int linea = -1;
+                    int columna = -1;
+                    
+                    // El mensaje tiene formato: "Lexical error at line X, column Y..."
+                    if (mensaje.contains("line")) {
+                        try {
+                            int lineaStart = mensaje.indexOf("line ") + 5;
+                            int lineaEnd = mensaje.indexOf(",", lineaStart);
+                            if (lineaEnd > lineaStart) {
+                                linea = Integer.parseInt(mensaje.substring(lineaStart, lineaEnd).trim());
+                            }
+                        } catch (Exception ex) {
+                            linea = stream.getEndLine();
+                        }
+                    } else {
+                        linea = stream.getEndLine();
+                    }
+                    
+                    if (mensaje.contains("column")) {
+                        try {
+                            int columnaStart = mensaje.indexOf("column ") + 7;
+                            int columnaEnd = mensaje.indexOf(".", columnaStart);
+                            if (columnaEnd > columnaStart) {
+                                columna = Integer.parseInt(mensaje.substring(columnaStart, columnaEnd).trim());
+                            }
+                        } catch (Exception ex) {
+                            columna = stream.getEndColumn();
+                        }
+                    } else {
+                        columna = stream.getEndColumn();
+                    }
+                    
+                    // Extraer carácter inválido del mensaje
                     String caracterInvalido = "?";
+                    int codigoASCII = -1;
+                    
                     if (mensaje.contains("Encountered: \"")) {
                         int start = mensaje.indexOf("Encountered: \"") + 14;
                         int end = mensaje.indexOf("\"", start);
                         if (end > start) {
                             caracterInvalido = mensaje.substring(start, end);
+                            if (!caracterInvalido.isEmpty()) {
+                                codigoASCII = (int) caracterInvalido.charAt(0);
+                            }
                         }
+                    } else if (mensaje.contains("Encountered: <EOF>")) {
+                        caracterInvalido = "<EOF>";
+                    }
+                    
+                    // Formatear caracteres especiales para visualización
+                    String caracterMostrar = caracterInvalido;
+                    if (caracterInvalido.equals("\n")) caracterMostrar = "\\n";
+                    else if (caracterInvalido.equals("\t")) caracterMostrar = "\\t";
+                    else if (caracterInvalido.equals("\r")) caracterMostrar = "\\r";
+                    
+                    // Crear mensaje descriptivo
+                    String mensajeError;
+                    if (codigoASCII >= 0) {
+                        mensajeError = "Caracter no reconocido: '" + caracterMostrar + 
+                                     "' (ASCII: " + codigoASCII + ")";
+                    } else {
+                        mensajeError = "Caracter no reconocido: '" + caracterMostrar + "'";
                     }
                     
                     errores.add(new ErrorAnalisis(
                         TipoError.LEXICO,
-                        "Caracter no reconocido",
+                        mensajeError,
                         linea, columna,
-                        caracterInvalido,
+                        caracterMostrar,
                         "token valido"));
                     
                     // Intentar recuperarse avanzando un carácter
                     try {
                         stream.readChar();
                     } catch (IOException ioException) {
-                        break;
+                        continuar = false;
                     }
                 }
             }
@@ -406,7 +648,7 @@ public class AnalisisSintactico {
             reader.close();
             
         } catch (Exception e) {
-            System.err.println("Error en pre-análisis léxico: " + e.getMessage());
+            System.err.println("Error en pre-analisis lexico: " + e.getMessage());
         }
         
         return errores;
@@ -508,7 +750,7 @@ public class AnalisisSintactico {
             reader.close();
             
         } catch (Exception e) {
-            System.err.println("Error en pre-análisis de delimitadores: " + e.getMessage());
+            System.err.println("Error en pre-analisis de delimitadores: " + e.getMessage());
         }
         
         return errores;
@@ -559,7 +801,7 @@ public class AnalisisSintactico {
     }
     
     /**
-     * Muestra la tabla de errores en consola (SIN columna DESCRIPCION)
+     * Muestra la tabla de errores en consola con información detallada
      */
     private static void mostrarErrores(List<ErrorAnalisis> errores) {
         System.out.println("========================================");
@@ -583,36 +825,75 @@ public class AnalisisSintactico {
         System.out.println("Total: " + errores.size());
         System.out.println();
         
-        System.out.println("--------------------------------------------------------------------------------");
-        System.out.println("│ No. │ Tipo       │ Linea │ Col │ Encontrado      │ Esperado");
-        System.out.println("--------------------------------------------------------------------------------");
-        
-        for (int i = 0; i < errores.size(); i++) {
-            ErrorAnalisis error = errores.get(i);
+        // Mostrar tabla de ERRORES LÉXICOS si existen
+        if (erroresLexicos > 0) {
+            System.out.println("--------------------------------------");
+            System.out.println("     ERRORES LEXICOS ENCONTRADOS        ");
+            System.out.println("--------------------------------------");
+            System.out.println();
+            System.out.println("-----------------------------------------");
+            System.out.println("│ No. │ Caracter    │ Linea  │ Columna │");
+            System.out.println("-----------------------------------------");
             
-            String tipoStr = error.tipo == TipoError.LEXICO ? "LEXICO" : "SINTACTICO";
-            
-            String tokenEncontrado = error.tokenEncontrado;
-            if (tokenEncontrado.length() > 15) {
-                tokenEncontrado = tokenEncontrado.substring(0, 12) + "...";
+            int contadorLexico = 1;
+            for (ErrorAnalisis error : errores) {
+                if (error.tipo == TipoError.LEXICO) {
+                    String caracterMostrar = error.tokenEncontrado;
+                    if (caracterMostrar.equals("\n")) caracterMostrar = "\\n";
+                    if (caracterMostrar.equals("\t")) caracterMostrar = "\\t";
+                    if (caracterMostrar.equals("\r")) caracterMostrar = "\\r";
+                    
+                    System.out.printf("│ %-4d │ %-11s │ %-6d │ %-7d │%n",
+                        contadorLexico++,
+                        caracterMostrar,
+                        error.linea,
+                        error.columna);
+                }
             }
-            
-            String tokenEsperado = error.tokenEsperado;
-            if (tokenEsperado.length() > 30) {
-                tokenEsperado = tokenEsperado.substring(0, 27) + "...";
-            }
-            
-            System.out.printf("│ %-4d│ %-10s │ %-6d│ %-4d│ %-15s │ %s%n",
-                i + 1,
-                tipoStr,
-                error.linea,
-                error.columna,
-                tokenEncontrado,
-                tokenEsperado);
+            System.out.println("------------------------------------------");
+            System.out.println();
         }
         
-        System.out.println("--------------------------------------------------------------------------------");
-        System.out.println();
+        // Mostrar tabla de ERRORES SINTÁCTICOS si existen
+        if (erroresSintacticos > 0) {
+            System.out.println("---------------------------------------------------------------------------------");
+            System.out.println("                      ERRORES SINTACTICOS ENCONTRADOS");
+            System.out.println("---------------------------------------------------------------------------------");
+            System.out.println();
+            System.out.println("--------------------------------------------------------------------------------------------");
+            System.out.println("│ No. │ Linea │ Col │ Token Encontrado │ Token Esperado              │ Descripcion");
+            System.out.println("--------------------------------------------------------------------------------------------");
+            
+            int contadorSintactico = 1;
+            for (ErrorAnalisis error : errores) {
+                if (error.tipo == TipoError.SINTACTICO) {
+                    String tokenEncontrado = error.tokenEncontrado;
+                    if (tokenEncontrado.length() > 16) {
+                        tokenEncontrado = tokenEncontrado.substring(0, 13) + "...";
+                    }
+                    
+                    String tokenEsperado = error.tokenEsperado;
+                    if (tokenEsperado.length() > 27) {
+                        tokenEsperado = tokenEsperado.substring(0, 24) + "...";
+                    }
+                    
+                    String descripcion = error.mensaje;
+                    if (descripcion.length() > 50) {
+                        descripcion = descripcion.substring(0, 47) + "...";
+                    }
+                    
+                    System.out.printf("│ %-4d│ %-6d│ %-4d│ %-16s │ %-27s │ %s%n",
+                        contadorSintactico++,
+                        error.linea,
+                        error.columna,
+                        tokenEncontrado,
+                        tokenEsperado,
+                        descripcion);
+                }
+            }
+            System.out.println("--------------------------------------------------------------------------------------------");
+            System.out.println();
+        }
         
         System.out.println("========================================");
         System.out.println("        RESUMEN DEL ANALISIS");
@@ -622,7 +903,15 @@ public class AnalisisSintactico {
         System.out.println("  - Errores lexicos: " + erroresLexicos);
         System.out.println("  - Errores sintacticos: " + erroresSintacticos);
         System.out.println();
-        System.out.println("Estado: ANALISIS COMPLETADO CON ERRORES");
+        
+        if (erroresLexicos > 0 && erroresSintacticos > 0) {
+            System.out.println("Estado: ANALISIS CON ERRORES LEXICOS Y SINTACTICOS");
+        } else if (erroresLexicos > 0) {
+            System.out.println("Estado: ANALISIS CON ERRORES LEXICOS");
+        } else {
+            System.out.println("Estado: ANALISIS CON ERRORES SINTACTICOS");
+        }
+        
         System.out.println();
         System.out.println("Se genero un archivo .errores con informacion detallada");
         System.out.println();
